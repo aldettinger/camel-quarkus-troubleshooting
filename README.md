@@ -4,7 +4,78 @@
 
 # A common maintenance use case exercise (update a certificate ?)
 
-# Debugging in native mode ?
+# Troubleshooting in native mode
+
+In native mode, an executable targeting a specific operating system is built.
+There is a first process assembling a command line to invoke the GraalVM native image tool.
+Then, `native-image` is invoked.
+
+## Pass an option to the native-image tool
+
+The native-image tool has a lot of [interesting options](https://www.graalvm.org/22.1/reference-manual/native-image/Options/#options-to-native-image-builder) that could be useful to investigate an issue.
+
+Those options could be passed to `native-image` through quarkus using `-Dquarkus.native.additional-build-args`.
+
+For instance, let's trace the class initialization of the `MyRoute` class:
+
+```
+mvn clean package -Dnative -Dquarkus.native.additional-build-args='--trace-class-initialization=org.aldettinger.troubleshooting.MyRoute'
+```
+
+In the console logs, the `native-image` command line has been impacted:
+
+```
+native-image ... --trace-class-initialization=org.aldettinger.troubleshooting.MyRoute ...
+```
+
+And we have a logs more related to class initialization traces:
+
+```
+# Printing 1 class initialization trace(s) of class(es) traced by TraceClassInitialization to: /home/agallice/dev/projects/camel-quarkus-troubleshooting/cq-troubleshooting-native/target/cq-troubleshooting-native-1.0.0-SNAPSHOT-native-image-source-jar/reports/traced_class_initialization_20220701_124538.txt
+```
+
+The reports contains the stack trace involved in `MyRoute` initialization:
+
+```
+org.aldettinger.troubleshooting.MyRoute
+---------------------------------------------
+        at org.aldettinger.troubleshooting.MyRoute.<clinit>(MyRoute.java)
+        at jdk.internal.reflect.NativeConstructorAccessorImpl.newInstance0(Unknown Source)
+        at jdk.internal.reflect.NativeConstructorAccessorImpl.newInstance(NativeConstructorAccessorImpl.java:62)
+        at jdk.internal.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:45)
+        at java.lang.reflect.Constructor.newInstance(Constructor.java:490)
+        at org.apache.camel.support.ObjectHelper.newInstance(ObjectHelper.java:393)
+        at org.apache.camel.impl.engine.DefaultInjector.newInstance(DefaultInjector.java:70)
+        at org.apache.camel.quarkus.main.CamelMainRecorder.addRoutesBuilder(CamelMainRecorder.java:60)
+        at io.quarkus.deployment.steps.CamelMainProcessor$main2097889726.deploy_0(Unknown Source)
+        at io.quarkus.deployment.steps.CamelMainProcessor$main2097889726.deploy(Unknown Source)
+        at io.quarkus.runner.ApplicationImpl.<clinit>(Unknown Source)
+
+```
+
+We see that the class initialization has been recorded at build time in `CamelMainRecorder` where a new instance has been created by reflection.
+
+This is just an example, the bottom line being that we can pass options to `native-image`.
+
+## Extracting information from a native executable
+
+Standard tools working with executable could be used. For instance `strings`.
+
+What is the Java version run by the native executable ?
+What is the GraalVM version ?
+Is it Mandrel distribution ?
+
+```
+[main_upstream @ target]$ strings rest-to-nats-demo-1.0.0-SNAPSHOT-runner | grep core.VM
+com.oracle.svm.core.VM=GraalVM 22.0.0.2 Java 11 CE
+com.oracle.svm.core.VM.Java.Version=11.0.14
+com.oracle.svm.core.VM.Target.Platform=org.graalvm.nativeimage.Platform$LINUX_AMD64
+
+[27x_downstream @ nats]$ strings target/camel-quarkus-integration-test-nats-2.7.1.fuse-SNAPSHOT-runner | grep core.VM
+com.oracle.svm.core.VM=GraalVM 21.3.2.0-Final Java 11 Mandrel Distribution
+com.oracle.svm.core.VM.Java.Version=11.0.15
+com.oracle.svm.core.VM.Target.Platform=org.graalvm.nativeimage.Platform$LINUX_AMD64
+```
 
 # Performance troubleshooting
 
@@ -40,6 +111,7 @@ java -jar target/quarkus-app/quarkus-run.jar -an 2.9.0 2.10.0-SNAPSHOT
 Let's remind a few things:
  + upstream only
  + mean throughput based only
+ + native works only with environment where quarkus container-build is possible
  + maybe the scenario can be updated when troubleshooting a specific performance issue
 
 # Other troubleshooting experience ?
