@@ -8,6 +8,9 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Handler;
 
 import io.quarkus.runtime.annotations.RegisterForReflection;
+import jdk.jfr.Description;
+import jdk.jfr.Event;
+import jdk.jfr.Label;
 import sun.misc.Unsafe;
 
 @Singleton
@@ -16,6 +19,8 @@ public class MyBean {
 
     @Handler
     public String doIt(Exchange exchange) {
+        new DoItEvent().commit();
+
         long counter = exchange.getProperty(Exchange.TIMER_COUNTER, Long.class);
         String body = exchange.getMessage().getBody(String.class);
 
@@ -38,4 +43,11 @@ public class MyBean {
         }
     }
 
+    @Label("Do It")
+    @Description("Signal do it has been called")
+    static class DoItEvent extends Event {
+        @Label("Message")
+        String message;
+    }
+    
 }

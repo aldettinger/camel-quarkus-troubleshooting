@@ -13,7 +13,7 @@ Then, a second process is actually running the built command line in order to cr
 Let's do a build with some interesting options:
 
 ```
-mvn clean package -Dnative -Dquarkus.native.additional-build-args='--trace-class-initialization=org.aldettinger.troubleshooting.MyRoute -H:-OmitInlinedMethodDebugLineInfo' -Dquarkus.native.enable-reports -Dquarkus.native.debug.enabled
+mvn clean package -Dnative -Dquarkus.native.additional-build-args='--trace-class-initialization=org.aldettinger.troubleshooting.MyRoute -H:-OmitInlinedMethodDebugLineInfo' -Dquarkus.native.enable-reports -Dquarkus.native.debug.enabled -Dquarkus.native.enable-vm-inspection=true
 ```
 
 ## Pass an option to the native-image tool
@@ -146,6 +146,66 @@ Fatal error: unhandled exception in isolate 0x7f774a400000: java.lang.StackOverf
 
 Of course, we quickly reach a `StackOverflowError`.
 This is just an example, the bottom line being that it's possible to pass some flags to the native executable.
+
+## Collecting JFR events
+
+JFR events could be collected since GraalVM CE 21.2.0.
+The native image built at the beginning of this section included a parameter for that:
+
+```
+-Dquarkus.native.enable-vm-inspection=true
+```
+
+Now, at runtime, we could configure the native executable to record JFR events as below:
+
+```
+target/cq-troubleshooting-native-1.0.0-SNAPSHOT-runner -XX:+FlightRecorder -XX:StartFlightRecording="filename=recording.jfr"
+```
+
+Just remind to kill the native application before the SEGFAULT so that JFR events are flushed:
+
+```
+ain_upstream @ cq-troubleshooting-native]$ target/cq-troubleshooting-native-1.0.0-SNAPSHOT-runner -XX:+FlightRecorder -XX:StartFlightRecording="filename=recording.jfr"
+__  ____  __  _____   ___  __ ____  ______ 
+ --/ __ \/ / / / _ | / _ \/ //_/ / / / __/ 
+ -/ /_/ / /_/ / __ |/ , _/ ,< / /_/ /\ \   
+--\___\_\____/_/ |_/_/|_/_/|_|\____/___/   
+2022-07-08 16:10:51,637 INFO  [org.apa.cam.qua.cor.CamelBootstrapRecorder] (main) Bootstrap runtime: org.apache.camel.quarkus.main.CamelMainRuntime
+2022-07-08 16:10:51,640 INFO  [org.apa.cam.mai.MainSupport] (main) Apache Camel (Main) 3.17.0 is starting
+2022-07-08 16:10:51,645 INFO  [org.apa.cam.imp.eng.AbstractCamelContext] (main) Apache Camel 3.17.0 (camel-1) is starting
+2022-07-08 16:10:51,646 INFO  [org.apa.cam.imp.eng.AbstractCamelContext] (main) Routes startup (total:1 started:1)
+2022-07-08 16:10:51,646 INFO  [org.apa.cam.imp.eng.AbstractCamelContext] (main)     Started route1 (timer://test)
+2022-07-08 16:10:51,646 INFO  [org.apa.cam.imp.eng.AbstractCamelContext] (main) Apache Camel 3.17.0 (camel-1) started in 1ms (build:0ms init:0ms start:1ms)
+2022-07-08 16:10:51,646 INFO  [io.quarkus] (main) cq-troubleshooting-native 1.0.0-SNAPSHOT native (powered by Quarkus 2.10.1.Final) started in 0.019s. 
+2022-07-08 16:10:51,646 INFO  [io.quarkus] (main) Profile prod activated. 
+2022-07-08 16:10:51,646 INFO  [io.quarkus] (main) Installed features: [camel-bean, camel-core, camel-log, camel-timer, cdi]
+2022-07-08 16:10:52,647 INFO  [route1] (Camel (camel-1) thread #1 - timer://test) null :: MyBean counter 1
+2022-07-08 16:10:53,646 INFO  [route1] (Camel (camel-1) thread #1 - timer://test) null :: MyBean counter 2
+^C2022-07-08 16:10:53,929 INFO  [org.apa.cam.imp.eng.AbstractCamelContext] (Shutdown thread) Apache Camel 3.17.0 (camel-1) shutting down (timeout:45s)
+2022-07-08 16:10:53,932 INFO  [org.apa.cam.imp.eng.AbstractCamelContext] (Shutdown thread) Routes stopped (total:1 stopped:1)
+2022-07-08 16:10:53,932 INFO  [org.apa.cam.imp.eng.AbstractCamelContext] (Shutdown thread)     Stopped route1 (timer://test)
+2022-07-08 16:10:53,932 INFO  [org.apa.cam.imp.eng.AbstractCamelContext] (Shutdown thread) Apache Camel 3.17.0 (camel-1) shutdown in 3ms (uptime:2s287ms)
+2022-07-08 16:10:53,933 INFO  [io.quarkus] (Shutdown thread) cq-troubleshooting-native stopped in 0.004s
+```
+
+And finally, print the interesting events:
+
+```
+jfr print --events 'org.aldettinger.troubleshooting.MyBean$DoItEvent' recording.jfr
+
+org.aldettinger.troubleshooting.MyBean$DoItEvent {
+  startTime = 15:10:52.646
+  message = N/A
+  eventThread = "Camel (camel-1) thread #1 - timer://test" (javaThreadId = 47)
+}
+
+org.aldettinger.troubleshooting.MyBean$DoItEvent {
+  startTime = 15:10:53.646
+  message = N/A
+  eventThread = "Camel (camel-1) thread #1 - timer://test" (javaThreadId = 47)
+}
+
+```
 
 ## Debugging with gdb
 
@@ -319,5 +379,4 @@ With a stamp ?
  + [https://www.geeksforgeeks.org/gdb-command-in-linux-with-examples/](https://www.geeksforgeeks.org/gdb-command-in-linux-with-examples/)
 
 # TODO
-+ Check https://quarkus.io/version/2.7/guides/native-reference more deeply
-+ Continue from https://quarkus.io/guides/native-reference#why-are-native-executables-big
+ + Show how to debug a native image (not the build but the execution)

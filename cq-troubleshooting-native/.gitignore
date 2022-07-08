@@ -35,5 +35,8 @@ nb-configuration.xml
 *.orig
 *.rej
 
+# JFR recordings
+*.jfr
+
 # Local environment
 .env
