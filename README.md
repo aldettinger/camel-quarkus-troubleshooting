@@ -257,6 +257,14 @@ mvn clean install -Dquickly
 java -jar target/quarkus-app/quarkus-run.jar -an 2.9.0 2.10.0-SNAPSHOT
 ```
 
+Now, in image below, let's see what happen when running performance regression runs over periods of 1 second:
+
+![Native slower than JVM on first second](images/native-slower-than-JVM-on-first-second.png)
+
+Of course, the duration of `1s` is not enough to build an accurate view about a possible regression.
+However, it's interesting to note that a short lived application is way faster in native mode compared to JVM mode.
+Could you explain [why](https://quarkus.io/guides/native-reference#why-is-runtime-performance-of-a-native-executable-inferior-compared-to-jvm-mode) ?
+
 Finally, let's remind a few things about the performance regression prototype:
  + upstream only
  + mean throughput based only
@@ -281,4 +289,3 @@ With a stamp ?
 # TODO
 + Check https://quarkus.io/version/2.7/guides/native-reference more deeply
 + Continue from https://quarkus.io/guides/native-reference#why-is-runtime-performance-of-a-native-executable-inferior-compared-to-jvm-mode
-+ @TODO: Add a code section showing the perf tool running over 10s periods (ask the question why is native mode that quicker ?)
