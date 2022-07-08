@@ -115,6 +115,38 @@ grep Unused target/cq-troubleshooting-native-1.0.0-SNAPSHOT-native-image-source-
 
 Let's remember that the `MyRoute` class is [registered for reflection](https://github.com/apache/camel-quarkus/blob/main/extensions-core/core/deployment/src/main/java/org/apache/camel/quarkus/core/deployment/CamelNativeImageProcessor.java#L274) with methods. By default, Quarkus embed all methods.
 
+## Passing flags to the native executable
+
+It's possible to pass flags to the native executable, the whole list can be obtained using `-XX:PrintFlags=`:
+
+```
+[main_upstream @ camel-quarkus-troubleshooting]$ cq-troubleshooting-native/target/cq-troubleshooting-native-1.0.0-SNAPSHOT-runner -XX:PrintFlags=
+  -XX:ActiveProcessorCount=-1                  Overwrites the available number of processors provided by the OS. Any value <= 0 means using the processor count from
+                                               the OS.
+  -XX:±AutomaticReferenceHandling              Determines if the reference handling is executed automatically or manually. Default: + (enabled).
+...
+...
+...
+  -XX:±UseReferenceHandlerThread               Populate reference queues in a separate thread rather than after a garbage collection. Default: + (enabled).
+  -XX:±VerboseGC                               Print more information about the heap before and after each collection. Default: - (disabled).
+```
+
+For instance, let's reduce the threads stack size to 1 byte:
+
+```
+[main_upstream @ camel-quarkus-troubleshooting]$ cq-troubleshooting-native/target/cq-troubleshooting-native-1.0.0-SNAPSHOT-runner -XX:StackSize=1
+Fatal error: unhandled exception in isolate 0x7f774a400000: java.lang.StackOverflowError: null
+    at com.oracle.svm.core.graal.snippets.StackOverflowCheckImpl.newStackOverflowError0(StackOverflowCheckImpl.java:328)
+    at com.oracle.svm.core.graal.snippets.StackOverflowCheckImpl.newStackOverflowError(StackOverflowCheckImpl.java:324)
+    at com.oracle.svm.core.graal.snippets.StackOverflowCheckImpl.throwNewStackOverflowError(StackOverflowCheckImpl.java:304)
+    at java.io.PrintStream.println(PrintStream.java:881)
+    at com.oracle.svm.core.graal.snippets.CEntryPointSnippets.initializeIsolate(CEntryPointSnippets.java:321)
+    at com.oracle.svm.core.JavaMainWrapper$EnterCreateIsolateWithCArgumentsPrologue.enter(JavaMainWrapper.java:278)
+```
+
+Of course, we quickly reach a `StackOverflowError`.
+This is just an example, the bottom line being that it's possible to pass some flags to the native executable.
+
 ## Debugging with gdb
 
 With a native executable, it's possible to use a debugger like [gdb](https://www.geeksforgeeks.org/gdb-command-in-linux-with-examples/).
@@ -231,7 +263,7 @@ com.oracle.svm.core.UnmanagedMemoryUtil.copyLongsBackward(org.graalvm.word.Point
 # Performance regression detection
 
 There is a performance regression prototype located [here](https://github.com/aldettinger/cq-perf-sandbox):
- + For a given scenario: `from("platform-http:...").to("atlasmap:...")`
+ + For a given scenario `from("platform-http:...").to("atlasmap:...")`
  + It compares mean throughput against a list of camel-quarkus versions
  + It supports released versions, release candidate and SNAPSHOT versions
 
@@ -288,4 +320,4 @@ With a stamp ?
 
 # TODO
 + Check https://quarkus.io/version/2.7/guides/native-reference more deeply
-+ Continue from https://quarkus.io/guides/native-reference#why-is-runtime-performance-of-a-native-executable-inferior-compared-to-jvm-mode
++ Continue from https://quarkus.io/guides/native-reference#why-are-native-executables-big
