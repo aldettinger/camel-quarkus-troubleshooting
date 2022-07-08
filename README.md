@@ -7,8 +7,8 @@
 # Troubleshooting in native mode
 
 In native mode, an executable targeting a specific operating system is built.
-There is a first process assembling a command line to invoke the GraalVM native image tool.
-Then, `native-image` is invoked.
+There is a first process assembling a command line to invoke the GraalVM `native image` tool.
+Then, a second process is actually running the built command line in order to create the executable.
 
 Let's do a build with some interesting options:
 
@@ -34,13 +34,13 @@ In the console logs, the `native-image` command line has been impacted:
 native-image ... --trace-class-initialization=org.aldettinger.troubleshooting.MyRoute ...
 ```
 
-And we have a logs more related to class initialization traces:
+Please notice the log line related to class initialization traces:
 
 ```
 # Printing 1 class initialization trace(s) of class(es) traced by TraceClassInitialization to: /home/agallice/dev/projects/camel-quarkus-troubleshooting/cq-troubleshooting-native/target/cq-troubleshooting-native-1.0.0-SNAPSHOT-native-image-source-jar/reports/traced_class_initialization_20220701_124538.txt
 ```
 
-The reports contains the stack trace involved in `MyRoute` initialization:
+The report contains the stack trace involved in the initialization of the `MyRoute` class:
 
 ```
 org.aldettinger.troubleshooting.MyRoute
@@ -64,11 +64,14 @@ This is just an example, the bottom line being that we can pass options to `nati
 
 ## Extracting information from a native executable
 
-Standard tools working with executable could be used. For instance `strings`.
+In native an executable in generated.
+As such, standard tools working with executable could be used.
+For instance `readelf`, `strings` and so on.
 
-What is the Java version run by the native executable ?
-What is the GraalVM version ?
-Is it Mandrel distribution ?
+Let's see an example below that help answering few questions:
+ + What is the Java version run by the native executable ?
+ + What is the GraalVM version ?
+ + Is it Mandrel distribution ?
 
 ```
 [main_upstream @ target]$ strings rest-to-nats-demo-1.0.0-SNAPSHOT-runner | grep core.VM
@@ -90,7 +93,7 @@ In native mode, we are able to print some native reports, we have done this in t
 -Dquarkus.native.enable-reports
 ```
 
-In the `native-image` logs, let's focus on those txt reports:
+In the `native-image` logs, let's focus on those `.txt` report files:
 
 ```
 # Printing list of used methods to: /home/agallice/dev/projects/camel-quarkus-troubleshooting/cq-troubleshooting-native/target/cq-troubleshooting-native-1.0.0-SNAPSHOT-native-image-source-jar/reports/used_methods_cq-troubleshooting-native-1.0.0-SNAPSHOT-runner_20220701_151920.txt
@@ -110,19 +113,19 @@ grep Unused target/cq-troubleshooting-native-1.0.0-SNAPSHOT-native-image-source-
 # UnusedClass is not embedded
 ```
 
-Let's remember that `MyRoute` class is instantiated by reflection, where by default Quarkus embed all methods.
+Let's remember that the `MyRoute` class is [registered for reflection](https://github.com/apache/camel-quarkus/blob/main/extensions-core/core/deployment/src/main/java/org/apache/camel/quarkus/core/deployment/CamelNativeImageProcessor.java#L274) with methods. By default, Quarkus embed all methods.
 
-## Debug with gdb
+## Debugging with gdb
 
-With a native executable, it's possible to use a debugger like gdb.
-In the command line, we have included some debug information with options below:
+With a native executable, it's possible to use a debugger like [gdb](https://www.geeksforgeeks.org/gdb-command-in-linux-with-examples/).
+In the command line, we have included some debug information thanks to options below:
 
 ```
 -Dquarkus.native.debug.enabled
 -Dquarkus.native.additional-build-args=-H:-OmitInlinedMethodDebugLineInfo
 ```
 
-Then we can invoke gdb and let it know to run the application:
+Then we can invoke `gdb` and let it know to run the application:
 
 ```
 gdb target/cq-troubleshooting-native-1.0.0-SNAPSHOT-runner
@@ -140,7 +143,7 @@ com.oracle.svm.core.UnmanagedMemoryUtil.copyLongsBackward(union org.graalvm.word
 Missing separate debuginfos, use: debuginfo-install glibc-2.17-326.el7_9.x86_64 libgcc-4.8.5-44.el7.x86_64 sssd-client-1.16.5-10.el7_9.12.x86_64 zlib-1.2.7-20.el7_9.x86_64
 ```
 
-And we can print the stack trace
+And, we can print the stack trace with the `bt` command:
 
 ```
 (gdb) bt
@@ -185,9 +188,9 @@ And we can print the stack trace
 #28 0x00007ffff70b7b0d in clone () from /lib64/libc.so.6
 ```
 
-The method `MyBean.crash` seems to be responsible.
+The method `MyBean.crash()` seems to be responsible.
 
-Setting a breakpoint in the crash method and stepping over each line:
+Below, we put a breakpoint in the `crash()` method and step over the code line by line using `info`, `break` and `next` commands:
 
 ```
 gdb target/cq-troubleshooting-native-1.0.0-SNAPSHOT-runner
@@ -219,8 +222,6 @@ Missing separate debuginfos, use: debuginfo-install glibc-2.17-326.el7_9.x86_64 
 Program received signal SIGSEGV, Segmentation fault.
 com.oracle.svm.core.UnmanagedMemoryUtil.copyLongsBackward(org.graalvm.word.Pointer, org.graalvm.word.Pointer, org.graalvm.word.UnsignedWord)void () at com/oracle/svm/core/UnmanagedMemoryUtil.java:169
 169	            long l24 = src.readLong(24);
-
-	
 ```
 
 ## Debug from an IDE
@@ -230,11 +231,11 @@ com.oracle.svm.core.UnmanagedMemoryUtil.copyLongsBackward(org.graalvm.word.Point
 # Performance regression detection
 
 There is a performance regression prototype located [here](https://github.com/aldettinger/cq-perf-sandbox):
- + A sample scenario: `from("platform-http:...").to("atlasmap:...")`
- + Compare mean throughput against a list of camel-quarkus versions
- + Support released versions, release candidate and SNAPSHOT versions
+ + For a given scenario: `from("platform-http:...").to("atlasmap:...")`
+ + It compares mean throughput against a list of camel-quarkus versions
+ + It supports released versions, release candidate and SNAPSHOT versions
 
-In 2.10.0-SNAPSHOT, native mode is around 10% slower compared to camel-quarkus 2.9.0
+During the camel-quarkus 2.10.0 upstream release, the performance regression prototype detects that native mode is around 10% slower compared to camel-quarkus 2.9.0
 
 ![Quarkus Start](images/native-perf-regression-with-quarkus-2.10.0.CR1.png)
 
@@ -245,24 +246,24 @@ Let's find in which commit the regression was introduced
 git checkout 45d4ae0681ed03ef59fbcb51aac7360ab23f9d82
 mvn clean install -Dquickly
 
-# We don't see any regression
+# After 45 minutes, we don't see any regression
 java -jar target/quarkus-app/quarkus-run.jar -an 2.9.0 2.10.0-SNAPSHOT
 
 # Build camel-quarkus AFTER upgrade to quarkus 2.10.0.CR1
 git checkout 1c6dd77b1743321b0daf1d7bd8344dee2683cd1c
 mvn clean install -Dquickly
 
-# We see a regression
+# After 45 minutes, We see a regression
 java -jar target/quarkus-app/quarkus-run.jar -an 2.9.0 2.10.0-SNAPSHOT
 ```
 
-Finally, let's remind a few things:
+Finally, let's remind a few things about the performance regression prototype:
  + upstream only
  + mean throughput based only
  + native works only with environment where quarkus container-build is possible
  + maybe the scenario can be updated when troubleshooting a specific performance issue
 
-To further profile runtime behaviour with flame graph, Quarkus describes a [tip](https://quarkus.io/guides/native-reference#profiling).
+To further profile runtime behaviour with flame graph, Quarkus describes a [tip](https://quarkus.io/guides/native-reference#profiling). I have not tested though.
 
 # Other troubleshooting experience ?
 
@@ -272,7 +273,12 @@ Precise that the stack trace is not always the right one => So tracing output.
 With a stamp ?
 
 # More links
- + https://quarkus.io/guides/native-reference
+ + [https://quarkus.io/guides/native-reference](https://quarkus.io/guides/native-reference)
+ + [https://github.com/aldettinger/cq-perf-sandbox](https://github.com/aldettinger/cq-perf-sandbox)
+ + [https://www.graalvm.org/22.1/reference-manual/native-image/Options/#options-to-native-image-builder](https://www.graalvm.org/22.1/reference-manual/native-image/Options/#options-to-native-image-builder)
+ + [https://www.geeksforgeeks.org/gdb-command-in-linux-with-examples/](https://www.geeksforgeeks.org/gdb-command-in-linux-with-examples/)
 
 # TODO
 + Check https://quarkus.io/version/2.7/guides/native-reference more deeply
++ Continue from https://quarkus.io/guides/native-reference#why-is-runtime-performance-of-a-native-executable-inferior-compared-to-jvm-mode
++ @TODO: Add a code section showing the perf tool running over 10s periods (ask the question why is native mode that quicker ?)
