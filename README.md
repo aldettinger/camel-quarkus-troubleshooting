@@ -377,6 +377,8 @@ With a stamp ?
  + [https://github.com/aldettinger/cq-perf-sandbox](https://github.com/aldettinger/cq-perf-sandbox)
  + [https://www.graalvm.org/22.1/reference-manual/native-image/Options/#options-to-native-image-builder](https://www.graalvm.org/22.1/reference-manual/native-image/Options/#options-to-native-image-builder)
  + [https://www.geeksforgeeks.org/gdb-command-in-linux-with-examples/](https://www.geeksforgeeks.org/gdb-command-in-linux-with-examples/)
+ + [https://www.graalvm.org/22.1/reference-manual/native-image/JFR/](https://www.graalvm.org/22.1/reference-manual/native-image/JFR/)
 
 # TODO
  + Show how to debug a native image (not the build but the execution)
+ + Fix traceclassinitialization (it's not working anymore)
