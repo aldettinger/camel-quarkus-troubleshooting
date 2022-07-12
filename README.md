@@ -147,6 +147,36 @@ Fatal error: unhandled exception in isolate 0x7f774a400000: java.lang.StackOverf
 Of course, we quickly reach a `StackOverflowError`.
 This is just an example, the bottom line being that it's possible to pass some flags to the native executable.
 
+There is more a concrete case where passing flags to the native executable has helped.
+In camel-quarkus 2.10.0, I was suspecting a 10% mean throughput drop in native mode compared to camel-quarkus-2.9.0.
+I was able to pass some flags to the native executable to get more logs about garbage collection:
+
+```
+-XX:+PrintGC -XX:+VerboseGC
+```
+
+And then compare the garbage collection logs between both versions.
+With camel-quarkus 2.9.0, the last log looks like:
+
+```
+[[47201169170742 GC: before  epoch: 778  cause: CollectOnAllocation]
+[Incremental GC (CollectOnAllocation) 286720K->24576K, 0.0008521 secs]
+ [47201170042867 GC: after   epoch: 778  cause: CollectOnAllocation  policy: by space and time  type: incremental
+  collection time: 852161 nanoSeconds]]
+```
+
+While with camel-quarkus 2.10.0, the last log is the following:
+
+```
+[[48590247521300 GC: before  epoch: 1033  cause: CollectOnAllocation]
+[Incremental GC (CollectOnAllocation) 295936K->33792K, 0.0012861 secs]
+ [48590248820674 GC: after   epoch: 1033  cause: CollectOnAllocation  policy: by space and time  type: incremental
+  collection time: 1286184 nanoSeconds]]
+```
+
+So, the garbage collector is called more frequently, collection take longer time while the unreclaimed memory is higher.
+That could explain a performance drop.
+
 ## Collecting JFR events
 
 JFR events could be collected since GraalVM CE 21.2.0.
