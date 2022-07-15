@@ -13,7 +13,7 @@ Then, a second process is actually running the built command line in order to cr
 Let's do a build with some interesting options:
 
 ```
-mvn clean package -Dnative -Dquarkus.native.additional-build-args='--trace-class-initialization=org.aldettinger.troubleshooting.MyRoute -H:-OmitInlinedMethodDebugLineInfo' -Dquarkus.native.enable-reports -Dquarkus.native.debug.enabled -Dquarkus.native.enable-vm-inspection=true
+mvn clean package -Dnative -Dquarkus.native.additional-build-args='--trace-class-initialization=org.aldettinger.troubleshooting.MyRoute,-H:-OmitInlinedMethodDebugLineInfo' -Dquarkus.native.enable-reports -Dquarkus.native.debug.enabled -Dquarkus.native.enable-vm-inspection=true
 ```
 
 ## Pass an option to the native-image tool
@@ -40,25 +40,10 @@ Please notice the log line related to class initialization traces:
 # Printing 1 class initialization trace(s) of class(es) traced by TraceClassInitialization to: /home/agallice/dev/projects/camel-quarkus-troubleshooting/cq-troubleshooting-native/target/cq-troubleshooting-native-1.0.0-SNAPSHOT-native-image-source-jar/reports/traced_class_initialization_20220701_124538.txt
 ```
 
-The report contains the stack trace involved in the initialization of the `MyRoute` class:
-
-```
-org.aldettinger.troubleshooting.MyRoute
----------------------------------------------
-        at org.aldettinger.troubleshooting.MyRoute.<clinit>(MyRoute.java)
-        at jdk.internal.reflect.NativeConstructorAccessorImpl.newInstance0(Unknown Source)
-        at jdk.internal.reflect.NativeConstructorAccessorImpl.newInstance(NativeConstructorAccessorImpl.java:62)
-        at jdk.internal.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:45)
-        at java.lang.reflect.Constructor.newInstance(Constructor.java:490)
-        at org.apache.camel.support.ObjectHelper.newInstance(ObjectHelper.java:393)
-        at org.apache.camel.impl.engine.DefaultInjector.newInstance(DefaultInjector.java:70)
-        at org.apache.camel.quarkus.main.CamelMainRecorder.addRoutesBuilder(CamelMainRecorder.java:60)
-        at io.quarkus.deployment.steps.CamelMainProcessor$main2097889726.deploy_0(Unknown Source)
-        at io.quarkus.deployment.steps.CamelMainProcessor$main2097889726.deploy(Unknown Source)
-        at io.quarkus.runner.ApplicationImpl.<clinit>(Unknown Source)
-```
-
-We see that the `MyRoute` class initialization has been recorded at build time in `CamelMainRecorder` where a new instance has been created by reflection.
+The report contains the stack trace involved in the initialization of the `MyRoute` class.
+From this report, would you be able to find clues that the `MyRoute` class initialization:
+ + has been recorded at build time ?
+ + is instantiated through reflection ?
 
 This is just an example, the bottom line being that we can pass options to `native-image` using `-Dquarkus.native.additional-build-args`.
 
