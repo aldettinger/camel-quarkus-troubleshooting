@@ -335,7 +335,7 @@ com.oracle.svm.core.UnmanagedMemoryUtil.copyLongsBackward(org.graalvm.word.Point
 169	            long l24 = src.readLong(24);
 ```
 
-## Debugging from eclipse
+## Debugging from Eclipse
 
 It seems we have all the DEBUG symbols needed to run `gdb`.
 So we might be able to run it from eclipse too, let's try to create a C/C++ debug configuration:
@@ -396,6 +396,7 @@ Could you explain [why](https://quarkus.io/guides/native-reference#why-is-runtim
 Finally, let's remind a few things about the performance regression prototype:
  + upstream only
  + mean throughput based only
+ + HTTP requests based scenario only
  + native works only with environment where quarkus container-build is possible
  + maybe the scenario can be updated when troubleshooting a specific performance issue
 
