@@ -335,9 +335,26 @@ com.oracle.svm.core.UnmanagedMemoryUtil.copyLongsBackward(org.graalvm.word.Point
 169	            long l24 = src.readLong(24);
 ```
 
-## Debug from an IDE
+## Debugging from eclipse
 
-@TODO
+It seems we have all the DEBUG symbols needed to run `gdb`.
+So we might be able to run it from eclipse too, let's try to create a C/C++ debug configuration:
+ + Debugs As | Debug Configurations... | C/C++ Application | New Configuration
+ + In C++ Application, set the full path to `cq-troubleshooting-native-1.0.0-SNAPSHOT-runner`
+ + In the Debugger Tab, set stop on startup to `org.aldettinger.troubleshooting.MyBean.doIt`
+
+`gdb` is started and eclipse display the code where the breakpoint is hit:
+
+![Debugging a native image from eclipse](images/debugging-a-native-app-from-eclipse.png)
+
+We can use some standard debugger command, Step Over, Resume...
+Eclipse seems to be able to approximately match the control flow of the application.
+However, other features seems not to be working like Breakpoint, Expression Evaluation...
+
+Conclusion:
+ + The support seems to be only partial (maybe the experience would be better with a gdb eclipse plugin)
+ + There might be better support via other solutions
+ + At the of the day, one does not native debug that often
 
 # Performance regression detection
 
@@ -392,12 +409,14 @@ Precise that the stack trace is not always the right one => So tracing output.
 With a stamp ?
 
 # More links
- + [https://quarkus.io/guides/native-reference](https://quarkus.io/guides/native-reference)
- + [https://github.com/aldettinger/cq-perf-sandbox](https://github.com/aldettinger/cq-perf-sandbox)
- + [https://www.graalvm.org/22.1/reference-manual/native-image/Options/#options-to-native-image-builder](https://www.graalvm.org/22.1/reference-manual/native-image/Options/#options-to-native-image-builder)
- + [https://www.geeksforgeeks.org/gdb-command-in-linux-with-examples/](https://www.geeksforgeeks.org/gdb-command-in-linux-with-examples/)
- + [https://www.graalvm.org/22.1/reference-manual/native-image/JFR/](https://www.graalvm.org/22.1/reference-manual/native-image/JFR/)
+ + [Native Reference Guide](https://quarkus.io/guides/native-reference)
+ + [Camel Quarkus Performance Regression Prototype](https://github.com/aldettinger/cq-perf-sandbox)
+ + [GraalVM Options to Native Image Builder](https://www.graalvm.org/22.1/reference-manual/native-image/Options/#options-to-native-image-builder)
+ + [Gdb command in Linux with examples](https://www.geeksforgeeks.org/gdb-command-in-linux-with-examples/)
+ + [JDK Flight Recorder (JFR) with Native Image](https://www.graalvm.org/22.1/reference-manual/native-image/JFR/)
+ + [Quarkus Q-Tip: GraalVM Native DebugInfo](https://www.youtube.com/watch?v=JqV-NFWupLA)
 
 # TODO
- + Show how to debug a native image (not the build but the execution)
- + Fix traceclassinitialization (it's not working anymore)
+ + Other troubleshooting experience ?
+ + A common maintenance use case exercise (update a certificate ?)
+ + Breakfix exercise (what scenario ?)
