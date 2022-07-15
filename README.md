@@ -177,10 +177,10 @@ Now, at runtime, we could configure the native executable to record JFR events a
 target/cq-troubleshooting-native-1.0.0-SNAPSHOT-runner -XX:+FlightRecorder -XX:StartFlightRecording="filename=recording.jfr"
 ```
 
-Just remind to kill the native application before the SEGFAULT so that JFR events are flushed:
+Just remind to kill the native application before the SEGFAULT so that JFR events are flushed.
+And the command will produce the below output:
 
 ```
-ain_upstream @ cq-troubleshooting-native]$ target/cq-troubleshooting-native-1.0.0-SNAPSHOT-runner -XX:+FlightRecorder -XX:StartFlightRecording="filename=recording.jfr"
 __  ____  __  _____   ___  __ ____  ______ 
  --/ __ \/ / / / _ | / _ \/ //_/ / / / __/ 
  -/ /_/ / /_/ / __ |/ , _/ ,< / /_/ /\ \   
@@ -203,11 +203,15 @@ __  ____  __  _____   ___  __ ____  ______
 2022-07-08 16:10:53,933 INFO  [io.quarkus] (Shutdown thread) cq-troubleshooting-native stopped in 0.004s
 ```
 
-And finally, print the interesting events:
+Finally, we could print the interesting events:
 
 ```
 jfr print --events 'org.aldettinger.troubleshooting.MyBean$DoItEvent' recording.jfr
+```
 
+The command produces below output:
+
+```
 org.aldettinger.troubleshooting.MyBean$DoItEvent {
   startTime = 15:10:52.646
   message = N/A
