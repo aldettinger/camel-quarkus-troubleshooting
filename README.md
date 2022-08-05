@@ -10,6 +10,12 @@ In native mode, an executable targeting a specific operating system is built.
 There is a first process assembling a command line to invoke the GraalVM `native image` tool.
 Then, a second process is actually running the built command line in order to create the executable.
 
+Let's open a shell in the `cq-troubleshooting-native`:
+
+```
+cd ~/dev/projects/camel-quarkus-troubleshooting/cq-troubleshooting-native
+```
+
 Let's do a build with some interesting options:
 
 ```
@@ -58,8 +64,15 @@ Let's see an example below that help answering few questions:
  + What is the GraalVM version ?
  + Is it Mandrel distribution ?
 
+Executing the command below:
+
 ```
-[main_upstream @ target]$ strings rest-to-nats-demo-1.0.0-SNAPSHOT-runner | grep core.VM
+strings target/cq-troubleshooting-native-1.0.0-SNAPSHOT-runner | grep core.VM
+```
+
+Would output some interesting bits:
+
+```
 com.oracle.svm.core.VM=GraalVM 22.0.0.2 Java 11 CE
 com.oracle.svm.core.VM.Java.Version=11.0.14
 com.oracle.svm.core.VM.Target.Platform=org.graalvm.nativeimage.Platform$LINUX_AMD64
@@ -89,23 +102,39 @@ In the `native-image` logs, let's focus on those `.txt` report files:
 And let's see that `UnusedClass` is not embedded whereas `MyRoute.unusedMethodIncludedInTheGraph` is embedded:
 
 ```
-grep 'unusedMethodIncludedInTheGraph' target/cq-troubleshooting-native-1.0.0-SNAPSHOT-native-image-source-jar/reports/used_methods_cq-troubleshooting-native-1.0.0-SNAPSHOT-runner_20220701_151920.txt 
+grep 'unusedMethodIncludedInTheGraph' target/cq-troubleshooting-native-1.0.0-SNAPSHOT-native-image-source-jar/reports/used_methods_cq-troubleshooting-native-1.0.0-SNAPSHOT-runner_*.txt
+```
+
+It output lines like below:
+
+```
 com.oracle.svm.core.reflect.ReflectionAccessorHolder.MyRoute_unusedMethodIncludedInTheGraph_06308d43e14803a0a755a556fd063f42941c9235(boolean, Object, Object[]):Object
 org.aldettinger.troubleshooting.MyRoute.unusedMethodIncludedInTheGraph():void
 # unusedMethodIncludedInTheGraph is embedded
-
-grep Unused target/cq-troubleshooting-native-1.0.0-SNAPSHOT-native-image-source-jar/reports/used_classes_cq-troubleshooting-native-1.0.0-SNAPSHOT-runner_20220701_151921.txt 
-# UnusedClass is not embedded
 ```
 
+So, it's not used but embedded. Can you explain why ?
 Let's remember that the `MyRoute` class is [registered for reflection](https://github.com/apache/camel-quarkus/blob/main/extensions-core/core/deployment/src/main/java/org/apache/camel/quarkus/core/deployment/CamelNativeImageProcessor.java#L274) with methods. By default, Quarkus embed all methods.
+
+Now, let's check whether `UnusedClass` is embedded or not with command below:
+
+```
+grep Unused target/cq-troubleshooting-native-1.0.0-SNAPSHOT-native-image-source-jar/reports/used_classes_cq-troubleshooting-native-1.0.0-SNAPSHOT-runner_*.txt 
+```
+
+We see there that `UnusedClass` has not been embedded.
 
 ## Passing flags to the native executable
 
 It's possible to pass flags to the native executable, the whole list can be obtained using `-XX:PrintFlags=`:
 
 ```
-[main_upstream @ camel-quarkus-troubleshooting]$ cq-troubleshooting-native/target/cq-troubleshooting-native-1.0.0-SNAPSHOT-runner -XX:PrintFlags=
+target/cq-troubleshooting-native-1.0.0-SNAPSHOT-runner -XX:PrintFlags=
+```
+
+It outputs some accessible flags below:
+
+```
   -XX:ActiveProcessorCount=-1                  Overwrites the available number of processors provided by the OS. Any value <= 0 means using the processor count from
                                                the OS.
   -XX:±AutomaticReferenceHandling              Determines if the reference handling is executed automatically or manually. Default: + (enabled).
@@ -119,7 +148,12 @@ It's possible to pass flags to the native executable, the whole list can be obta
 For instance, let's reduce the threads stack size to 1 byte:
 
 ```
-[main_upstream @ camel-quarkus-troubleshooting]$ cq-troubleshooting-native/target/cq-troubleshooting-native-1.0.0-SNAPSHOT-runner -XX:StackSize=1
+target/cq-troubleshooting-native-1.0.0-SNAPSHOT-runner -XX:StackSize=1
+```
+
+Of course, we quickly reach a `StackOverflowError`:
+
+```
 Fatal error: unhandled exception in isolate 0x7f774a400000: java.lang.StackOverflowError: null
     at com.oracle.svm.core.graal.snippets.StackOverflowCheckImpl.newStackOverflowError0(StackOverflowCheckImpl.java:328)
     at com.oracle.svm.core.graal.snippets.StackOverflowCheckImpl.newStackOverflowError(StackOverflowCheckImpl.java:324)
@@ -129,10 +163,9 @@ Fatal error: unhandled exception in isolate 0x7f774a400000: java.lang.StackOverf
     at com.oracle.svm.core.JavaMainWrapper$EnterCreateIsolateWithCArgumentsPrologue.enter(JavaMainWrapper.java:278)
 ```
 
-Of course, we quickly reach a `StackOverflowError`.
 This is just an example, the bottom line being that it's possible to pass some flags to the native executable.
 
-There is more a concrete case where passing flags to the native executable has helped.
+And actually, there is more a concrete case where passing flags to the native executable has helped.
 In camel-quarkus 2.10.0, I was suspecting a 10% mean throughput drop in native mode compared to camel-quarkus-2.9.0.
 I was able to pass some flags to the native executable to get more logs about garbage collection:
 
@@ -236,10 +269,15 @@ In the command line, we have included some debug information thanks to options b
 -Dquarkus.native.additional-build-args=-H:-OmitInlinedMethodDebugLineInfo
 ```
 
-Then we can invoke `gdb` and let it know to run the application:
+Then we can invoke `gdb` like below:
 
 ```
 gdb target/cq-troubleshooting-native-1.0.0-SNAPSHOT-runner
+```
+
+And then, let it know ro tun the application by typing:
+
+```
 run
 ```
 
@@ -301,20 +339,34 @@ And, we can print the stack trace with the `bt` command:
 
 The method `MyBean.crash()` seems to be responsible.
 
+Let's locate how we could put a breakpoint:
+
+```
+info function .*crash.*
+
+```
+
 Below, we put a breakpoint in the `crash()` method and step over the code line by line using `info`, `break` and `next` commands:
 
 ```
-gdb target/cq-troubleshooting-native-1.0.0-SNAPSHOT-runner
-(gdb) info function .*crash.*
-All functions matching regular expression ".*crash.*":
+break org.aldettinger.troubleshooting.MyBean.crash
+```
 
-File com/oracle/svm/core/reflect/ReflectionAccessorHolder.java:
-java.lang.Object *com.oracle.svm.core.reflect.ReflectionAccessorHolder.MyBean_crash_407cd4400c4a49b3c08111fb8f47c677c32b73d4(boolean, java.lang.Object, java.lang.Object[])java.lang.Object;
+Running the program again from the beginning would lead to the breakpoint being hit, and then could execute code step by step:
 
-File org/aldettinger/troubleshooting/MyBean.java:
-void org.aldettinger.troubleshooting.MyBean.crash()void;
-
-(gdb) break org.aldettinger.troubleshooting.MyBean.crash
+```
+(gdb) run
+The program being debugged has been started already.
+Start it from the beginning? (y or n) y
+Starting program: /home/agallice/dev/projects/camel-quarkus-troubleshooting/cq-troubleshooting-native/target/cq-troubleshooting-native-1.0.0-SNAPSHOT-runner 
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/lib64/libthread_db.so.1".
+[New Thread 0x7ffff4fff700 (LWP 12070)]
+[New Thread 0x7fffeffff700 (LWP 12071)]
+[New Thread 0x7fffee9ff700 (LWP 12073)]
+...
+...
+...
 Breakpoint 1 at 0xd203e0: file org/aldettinger/troubleshooting/MyBean.java, line 30.
 
 Breakpoint 1, org.aldettinger.troubleshooting.MyBean.crash()void () at org/aldettinger/troubleshooting/MyBean.java:30
