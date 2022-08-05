@@ -1,6 +1,21 @@
-# camel-quarkus-troubleshooting
+# Camel Quarkus Troubleshootings tips
 
-# Breakfix exercise (what scenario ?)
+# Breakfix scenario for issues commonly experienced upstream (JVM mode only)
+
+Having a look at issues reported in the Camel Quarkus community, we learn good lessons.
+
+First, most of the issues encountered by users in JVM mode finally ends up to be bugs in Camel or to a less extent Quarkus.
+So a key point here is to route the issue to the right project.
+
+Second, beyond that, we still have few more tricks presented in this breakfix exercise:
+ + Configs are set after object initialization
+ + Missing camel-quarkus dependency (for instance we miss "bean")
+
+non native issues:
+ + Mixing versions of Camel and Quarkus (not using the boms ? right boms ?) => seems hard to reproduce
+
+ + Same way with something that could be set from code only
+ + onException, we need one per RouteBuilder (design point)
 
 # A common maintenance use case exercise (update a certificate ?)
 
@@ -453,13 +468,6 @@ Finally, let's remind a few things about the performance regression prototype:
  + maybe the scenario can be updated when troubleshooting a specific performance issue
 
 To further profile runtime behaviour with flame graph, Quarkus describes a [tip](https://quarkus.io/guides/native-reference#profiling). I have not tested though.
-
-# Other troubleshooting experience ?
-
-A static initializer that is executed at build time leading to issue. With a SecureRandom ?
-Precise that the stack trace is not always the right one => So tracing output.
-
-With a stamp ?
 
 # More links
  + [Native Reference Guide](https://quarkus.io/guides/native-reference)
