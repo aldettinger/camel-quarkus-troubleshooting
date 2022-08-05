@@ -353,7 +353,7 @@ However, other features seems not to be working like Breakpoint, Expression Eval
 
 Conclusion:
  + The support seems to be only partial (maybe the experience would be better with a gdb eclipse plugin)
- + There might be better support via other solutions
+ + There might be better support via other solutions (maybe [NativeJDB](https://quarkus.io/blog/nativejdb-debugger-for-native-images/) ?)
  + At the of the day, one does not native debug that often
 
 # Performance regression detection
