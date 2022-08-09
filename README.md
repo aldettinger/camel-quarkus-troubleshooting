@@ -481,3 +481,12 @@ To further profile runtime behaviour with flame graph, Quarkus describes a [tip]
  + Other troubleshooting experience ?
  + A common maintenance use case exercise (update a certificate ?)
  + Breakfix exercise (what scenario ?)
+ + Ideas for scenarios
+ + How to use kamelet directly from github ?
+ + How to monitor CEQ ? What metrics to include ?
+ + How to add args at JVM level ? debug=ssl ?
+ + How to change logging configuration ?
+ + How do add profiles ? for instance to deal with CI/CD ? profile:dev/uat/prod ?
+ + How to externalize property place holders ?
+ + How to encrypt password in application.properties ?
+
