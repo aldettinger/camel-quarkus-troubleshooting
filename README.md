@@ -468,6 +468,7 @@ Finally, let's remind a few things about the performance regression prototype:
  + maybe the scenario can be updated when troubleshooting a specific performance issue
 
 To further profile runtime behaviour with flame graph, Quarkus describes a [tip](https://quarkus.io/guides/native-reference#profiling). I have not tested though.
+Alos, for more involved scenarios with pods, more metrics... Then tools like [TNB](https://github.com/tnb-software/TNB) and [Horreum](https://github.com/Hyperfoil/Horreum) could help.
 
 # More links
  + [Native Reference Guide](https://quarkus.io/guides/native-reference)
