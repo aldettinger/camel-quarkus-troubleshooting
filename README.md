@@ -7,14 +7,14 @@ Having a look at issues reported in the Camel Quarkus community, we learn good l
 First, most of the issues encountered by users in JVM mode finally ends up to be bugs in Camel or to a less extent Quarkus.
 So a key point here is to route the issue to the right project.
 
-Second, beyond that, we still have few more tricks presented in this breakfix exercise:
- + Configs are set after object initialization
- + Missing camel-quarkus dependency (for instance we miss "bean")
+Second, beyond that, we still have few more tricks presented in this breakfix exercise in the `cq-troubleshooting-jvm` folder:
+ + Missing camel-quarkus dependency (camel-quarkus-bean dependency is not set)
+ + Taking the responsibility of creating a camel component instance could interfere with camel-quarkus extension logic
+ + Configs are set after object initialization (@Config with static initializer)
 
 non native issues:
  + Mixing versions of Camel and Quarkus (not using the boms ? right boms ?) => seems hard to reproduce
 
- + Same way with something that could be set from code only
  + onException, we need one per RouteBuilder (design point)
 
 # A common maintenance use case exercise (update a certificate ?)
