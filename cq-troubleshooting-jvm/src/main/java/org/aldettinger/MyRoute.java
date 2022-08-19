@@ -2,7 +2,6 @@ package org.aldettinger;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import javax.validation.ValidationException;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.builder.RouteBuilder;
@@ -19,8 +18,6 @@ public class MyRoute extends RouteBuilder {
 
     @Override
     public void configure() {
-        onException(ValidationException.class).log("@TODO: only one exception by design ? really ?");
-
         from("platform-http:/hello").setBody(constant(USER_INFO)).bean("myBean").log("${in.body}");
     }
 

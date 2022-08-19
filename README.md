@@ -11,11 +11,7 @@ Second, beyond that, we still have few more tricks presented in this breakfix ex
  + Missing camel-quarkus dependency (camel-quarkus-bean dependency is not set)
  + Taking the responsibility of creating a camel component instance could interfere with camel-quarkus extension logic
  + Configs are set after object initialization (@Config with static initializer)
-
-non native issues:
- + Mixing versions of Camel and Quarkus (not using the boms ? right boms ?) => seems hard to reproduce
-
- + onException, we need one per RouteBuilder (design point)
+ + Tweaking camel-quarkus/quarkus versions alignment and changing boms order are not a good ideas
 
 # A common maintenance use case exercise (update a certificate ?)
 
