@@ -18,7 +18,7 @@ public class MyBean {
             throw new RuntimeException("Body is null");
         }
 
-        return body + " :: MyBean ";
+        return body + " :: MyBean";
     }
 
 }

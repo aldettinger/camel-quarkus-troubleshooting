@@ -12,6 +12,14 @@ Second, beyond that, we still have few more tricks presented in this breakfix ex
  + Taking the responsibility of creating a camel component instance could interfere with camel-quarkus extension logic
  + Configs are set after object initialization (@Config with static initializer)
  + Tweaking camel-quarkus/quarkus versions alignment and changing boms order are not a good ideas
+ + Using profile could help to have a configuration per environment (dev, test, prod... maybe custom)
+
+```
+mvn package -DskipTests
+java -jar target/quarkus-app/quarkus-run.jar
+# And in another window
+http :8080/hello
+```
 
 # A common maintenance use case exercise (update a certificate ?)
 
@@ -464,7 +472,7 @@ Finally, let's remind a few things about the performance regression prototype:
  + maybe the scenario can be updated when troubleshooting a specific performance issue
 
 To further profile runtime behaviour with flame graph, Quarkus describes a [tip](https://quarkus.io/guides/native-reference#profiling). I have not tested though.
-Alos, for more involved scenarios with pods, more metrics... Then tools like [TNB](https://github.com/tnb-software/TNB) and [Horreum](https://github.com/Hyperfoil/Horreum) could help.
+Also, for more involved scenarios with pods, more metrics... Then tools like [TNB](https://github.com/tnb-software/TNB) and [Horreum](https://github.com/Hyperfoil/Horreum) could help.
 
 # More links
  + [Native Reference Guide](https://quarkus.io/guides/native-reference)
@@ -475,15 +483,10 @@ Alos, for more involved scenarios with pods, more metrics... Then tools like [TN
  + [Quarkus Q-Tip: GraalVM Native DebugInfo](https://www.youtube.com/watch?v=JqV-NFWupLA)
 
 # TODO
- + Other troubleshooting experience ?
- + A common maintenance use case exercise (update a certificate ?)
- + Breakfix exercise (what scenario ?)
- + Ideas for scenarios
- + How to use kamelet directly from github ?
+ + Update performance regression section (to point to camel-quarkus-main branch)
  + How to monitor CEQ ? What metrics to include ?
  + How to add args at JVM level ? debug=ssl ?
  + How to change logging configuration ?
- + How do add profiles ? for instance to deal with CI/CD ? profile:dev/uat/prod ?
  + How to externalize property place holders ?
  + How to encrypt password in application.properties ?
 
