@@ -3,7 +3,6 @@ package org.aldettinger;
 import javax.inject.Inject;
 
 import org.apache.camel.CamelContext;
-import org.apache.camel.ProducerTemplate;
 import org.apache.camel.component.jpa.JpaComponent;
 import org.junit.jupiter.api.Test;
 
@@ -20,9 +19,6 @@ public class ConfigurationsSubtleIssueTest {
 
     @Inject
     CamelContext context;
-
-    @Inject
-    ProducerTemplate producerTemplate;
 
     @Test
     public void jpaComponentShouldBeConfiguredWithSharedEntityManagerSetToTrue() {

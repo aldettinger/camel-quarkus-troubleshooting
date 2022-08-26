@@ -22,14 +22,14 @@ There is no golden rule, still let's think where an issue is most likely to be c
  + A Camel Quarkus issue could also be reproduced on another Quarkus Platform participant (Quarkus/Camel Quarkus/Camel)
 
 Second, beyond that, we still have a few more tricks presented in this breakfix scenario in the `cq-troubleshooting-jvm` folder:
+ + Tweaking camel-quarkus/quarkus versions alignment and changing boms order are not a good ideas
  + Missing camel-quarkus dependency (camel-quarkus-bean dependency is not set)
  + Taking the responsibility of creating a camel component instance could interfere with camel-quarkus extension logic
  + Configs are set after object initialization (@Config with static initializer)
- + Tweaking camel-quarkus/quarkus versions alignment and changing boms order are not a good ideas
  + Using profile could help to have a configuration per environment (dev, test, prod... maybe custom)
 
 ```
-mvn package -DskipTests
+mvn package
 java -jar target/quarkus-app/quarkus-run.jar
 # And in another window
 http :8080/hello
