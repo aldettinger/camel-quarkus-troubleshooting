@@ -1,13 +1,27 @@
 # Camel Quarkus Troubleshootings tips
 
-# Breakfix scenario for issues commonly experienced upstream (JVM mode only)
+Camel Quarkus in few bullets:
+ + Making the best of Camel play well with the best of Quarkus
+ + Fast jar in JVM mode and native executable in native mode
+ + A camel component is wrapped in a Quarkus extensions (deployment + runtime artifacts)
+ + The extension deployment artifacts are oriented toward build time logic (@BuildStep, *BuildItems, @Recorder)
+ + The extension runtime artifacts are oriented toward runtime logic (native substitutions)
+
+So, it's simple.
+We need the best of Camel troubleshooting playing well with the best of Quarkus troubleshooting :bowtie:
+
+## Troubleshooting in JVM mode
 
 Having a look at issues reported in the Camel Quarkus community, we learn good lessons.
 
-First, most of the issues encountered by users in JVM mode finally ends up to be bugs in Camel or to a less extent Quarkus.
+First, most of the issues experienced by users in JVM mode finally ends up to be bugs in Camel or to a less extent Quarkus.
 So a key point here is to route the issue to the right project.
+There is no golden rule, still let's think where an issue is most likely to be corrected in situations below:
+ + A Camel Quarkus issue could also be reproduced on Camel Spring Boot (Camel/Camel Quarkus/Quarkus)
+ + A Camel Quarkus application working in JVM mode is not working in native mode (Camel Quarkus/Quarkus/Camel)
+ + A Camel Quarkus issue could also be reproduced on another Quarkus Platform participant (Quarkus/Camel Quarkus/Camel)
 
-Second, beyond that, we still have few more tricks presented in this breakfix exercise in the `cq-troubleshooting-jvm` folder:
+Second, beyond that, we still have a few more tricks presented in this breakfix scenario in the `cq-troubleshooting-jvm` folder:
  + Missing camel-quarkus dependency (camel-quarkus-bean dependency is not set)
  + Taking the responsibility of creating a camel component instance could interfere with camel-quarkus extension logic
  + Configs are set after object initialization (@Config with static initializer)
@@ -21,9 +35,7 @@ java -jar target/quarkus-app/quarkus-run.jar
 http :8080/hello
 ```
 
-# A common maintenance use case exercise (update a certificate ?)
-
-# Troubleshooting in native mode
+## Troubleshooting in native mode
 
 In native mode, an executable targeting a specific operating system is built.
 There is a first process assembling a command line to invoke the GraalVM `native image` tool.
@@ -41,7 +53,7 @@ Let's do a build with some interesting options:
 mvn clean package -Dnative -Dquarkus.native.additional-build-args='--trace-class-initialization=org.aldettinger.troubleshooting.MyRoute,-H:-OmitInlinedMethodDebugLineInfo' -Dquarkus.native.enable-reports -Dquarkus.native.debug.enabled -Dquarkus.native.enable-vm-inspection=true
 ```
 
-## Pass an option to the native-image tool
+### Pass an option to the native-image tool
 
 The native-image tool has a lot of [interesting options](https://www.graalvm.org/22.1/reference-manual/native-image/Options/#options-to-native-image-builder) that could be useful to investigate an issue.
 
@@ -72,7 +84,7 @@ From this report, would you be able to find clues that the `MyRoute` class initi
 
 This is just an example, the bottom line being that we can pass options to `native-image` using `-Dquarkus.native.additional-build-args`.
 
-## Extracting information from a native executable
+### Extracting information from a native executable
 
 In native an executable in generated.
 As such, standard tools working with executable could be used.
@@ -102,7 +114,7 @@ com.oracle.svm.core.VM.Java.Version=11.0.15
 com.oracle.svm.core.VM.Target.Platform=org.graalvm.nativeimage.Platform$LINUX_AMD64
 ```
 
-## Checking what Java code has been embedded inside the native executable
+### Checking what Java code has been embedded inside the native executable
 
 In native mode, we are able to print some native reports, we have done this in the command line by passing:
 
@@ -143,7 +155,7 @@ grep Unused target/cq-troubleshooting-native-1.0.0-SNAPSHOT-native-image-source-
 
 We see there that `UnusedClass` has not been embedded.
 
-## Passing flags to the native executable
+### Passing flags to the native executable
 
 It's possible to pass flags to the native executable, the whole list can be obtained using `-XX:PrintFlags=`:
 
@@ -214,7 +226,7 @@ While with camel-quarkus 2.10.0, the last log is the following:
 So, the garbage collector is called more frequently, collection take longer time while the unreclaimed memory is higher.
 That could explain a performance drop.
 
-## Collecting JFR events
+### Collecting JFR events
 
 JFR events could be collected since GraalVM CE 21.2.0.
 The native image built at the beginning of this section included a parameter for that:
@@ -278,7 +290,7 @@ org.aldettinger.troubleshooting.MyBean$DoItEvent {
 
 ```
 
-## Debugging with gdb
+### Debugging with gdb
 
 With a native executable, it's possible to use a debugger like [gdb](https://www.geeksforgeeks.org/gdb-command-in-linux-with-examples/).
 In the command line, we have included some debug information thanks to options below:
@@ -406,7 +418,7 @@ com.oracle.svm.core.UnmanagedMemoryUtil.copyLongsBackward(org.graalvm.word.Point
 169	            long l24 = src.readLong(24);
 ```
 
-## Debugging from Eclipse
+### Debugging from Eclipse
 
 It seems we have all the DEBUG symbols needed to run `gdb`.
 So we might be able to run it from eclipse too, let's try to create a C/C++ debug configuration:
@@ -427,7 +439,7 @@ Conclusion:
  + There might be better support via other solutions (maybe [NativeJDB](https://quarkus.io/blog/nativejdb-debugger-for-native-images/) ?)
  + At the of the day, one does not native debug that often
 
-# Performance regression detection
+## Performance regression detection
 
 There is a performance regression prototype located [here](https://github.com/aldettinger/cq-perf-sandbox):
  + For a given scenario `from("platform-http:...").to("atlasmap:...")`
@@ -474,7 +486,7 @@ Finally, let's remind a few things about the performance regression prototype:
 To further profile runtime behaviour with flame graph, Quarkus describes a [tip](https://quarkus.io/guides/native-reference#profiling). I have not tested though.
 Also, for more involved scenarios with pods, more metrics... Then tools like [TNB](https://github.com/tnb-software/TNB) and [Horreum](https://github.com/Hyperfoil/Horreum) could help.
 
-# More links
+## More links
  + [Native Reference Guide](https://quarkus.io/guides/native-reference)
  + [Camel Quarkus Performance Regression Prototype](https://github.com/aldettinger/cq-perf-sandbox)
  + [GraalVM Options to Native Image Builder](https://www.graalvm.org/22.1/reference-manual/native-image/Options/#options-to-native-image-builder)
@@ -482,7 +494,7 @@ Also, for more involved scenarios with pods, more metrics... Then tools like [TN
  + [JDK Flight Recorder (JFR) with Native Image](https://www.graalvm.org/22.1/reference-manual/native-image/JFR/)
  + [Quarkus Q-Tip: GraalVM Native DebugInfo](https://www.youtube.com/watch?v=JqV-NFWupLA)
 
-# TODO
+## TODO
  + Update performance regression section (to point to camel-quarkus-main branch)
  + How to monitor CEQ ? What metrics to include ?
  + How to add args at JVM level ? debug=ssl ?
