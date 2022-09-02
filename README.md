@@ -441,12 +441,12 @@ Conclusion:
 
 ## Performance regression detection
 
-There is a performance regression prototype located [here](https://github.com/aldettinger/cq-perf-sandbox):
+A performance regression tool was merged upstream in [camel-quarkus](https://github.com/apache/camel-quarkus/tree/main/tooling/perf-regression):
  + For a given scenario `from("platform-http:...").to("atlasmap:...")`
  + It compares mean throughput against a list of camel-quarkus versions
  + It supports released versions, release candidate and SNAPSHOT versions
 
-During the camel-quarkus 2.10.0 upstream release, the performance regression prototype detects that native mode is around 10% slower compared to camel-quarkus 2.9.0
+During the camel-quarkus 2.10.0 staging release, the tool detects a -10% mean throughput performance drop in native mode compared to camel-quarkus 2.9.0. Note that the scenario tested at this experimental stage was different than now, still it's a good story to help with troubleshooting.
 
 ![Quarkus Start](images/native-perf-regression-with-quarkus-2.10.0.CR1.png)
 
@@ -477,11 +477,11 @@ However, it's interesting to note that a short lived application is way faster i
 Could you explain [why](https://quarkus.io/guides/native-reference#why-is-runtime-performance-of-a-native-executable-inferior-compared-to-jvm-mode) ?
 
 Finally, let's remind a few things about the performance regression prototype:
- + upstream only
- + mean throughput based only
+ + Upstream only (actually the only upstream performance tool at this date)
+ + Mean throughput based only
  + HTTP requests based scenario only
- + native works only with environment where quarkus container-build is possible
- + maybe the scenario can be updated when troubleshooting a specific performance issue
+ + Native works only with environment where quarkus container-build is possible
+ + Maybe the scenario can be updated when troubleshooting a specific performance issue
 
 To further profile runtime behaviour with flame graph, Quarkus describes a [tip](https://quarkus.io/guides/native-reference#profiling). I have not tested though.
 Also, for more involved scenarios with pods, more metrics... Then tools like [TNB](https://github.com/tnb-software/TNB) and [Horreum](https://github.com/Hyperfoil/Horreum) could help.
@@ -495,7 +495,6 @@ Also, for more involved scenarios with pods, more metrics... Then tools like [TN
  + [Quarkus Q-Tip: GraalVM Native DebugInfo](https://www.youtube.com/watch?v=JqV-NFWupLA)
 
 ## TODO
- + Update performance regression section (to point to camel-quarkus-main branch)
  + How to monitor CEQ ? What metrics to include ?
  + How to add args at JVM level ? debug=ssl ?
  + How to change logging configuration ?
