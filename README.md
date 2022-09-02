@@ -16,6 +16,7 @@ Having a look at issues reported in the Camel Quarkus community, we learn good l
 
 First, most of the issues experienced by users in JVM mode finally ends up to be bugs in Camel or to a less extent Quarkus.
 So a key point here is to route the issue to the right project.
+
 There is no golden rule, still let's think where an issue is most likely to be corrected in situations below:
  + A Camel Quarkus issue could also be reproduced on Camel Spring Boot (Camel/Camel Quarkus/Quarkus)
  + A Camel Quarkus application working in JVM mode is not working in native mode (Camel Quarkus/Quarkus/Camel)
@@ -33,7 +34,19 @@ mvn package
 java -jar target/quarkus-app/quarkus-run.jar
 # And in another window
 http :8080/hello
+# We expect to see BasicMessageInProd and not BasicMessage
 ```
+
+ + Tuning the logging level could be achieved via configuration items (find instructions in application.properties)
+
+ ```
+ watch http :8080/hello
+ # In another window, try below command lines and explain
+ java -jar target/quarkus-app/quarkus-run.jar
+ java -jar target/quarkus-app/quarkus-run.jar -Dquarkus.log.category.\"org.apache.camel.impl\".level=DEBUG
+ java -Dquarkus.log.category.\"org.apache.camel.impl\".level=DEBUG -jar target/quarkus-app/quarkus-run.jar
+ java -Dquarkus.log.category.\"org.apache.camel.quarkus.core\".level=DEBUG -jar target/quarkus-app/quarkus-run.jar
+ ```
 
 ## Troubleshooting in native mode
 
@@ -497,7 +510,5 @@ Also, for more involved scenarios with pods, more metrics... Then tools like [TN
 ## TODO
  + How to monitor CEQ ? What metrics to include ?
  + How to add args at JVM level ? debug=ssl ?
- + How to change logging configuration ?
  + How to externalize property place holders ?
  + How to encrypt password in application.properties ?
-
