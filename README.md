@@ -455,7 +455,7 @@ Conclusion:
 ## Performance regression detection
 
 A performance regression tool was merged upstream in [camel-quarkus](https://github.com/apache/camel-quarkus/tree/main/tooling/perf-regression):
- + For a given scenario `from("platform-http:...").to("atlasmap:...")`
+ + For a given scenario `from("platform-http:/hello").transform(simple("Hello ${body}"));`
  + It compares mean throughput against a list of camel-quarkus versions
  + It supports released versions, release candidate and SNAPSHOT versions
 
