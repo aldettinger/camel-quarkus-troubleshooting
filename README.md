@@ -48,6 +48,10 @@ http :8080/hello
  java -Dquarkus.log.category.\"org.apache.camel.quarkus.core\".level=DEBUG -jar target/quarkus-app/quarkus-run.jar
  ```
 
+ + With the use of `micrometer` and `registry-prometheus` extensions, we are able to touch the monitoring subject.
+   Let's review some out of the box metrics available at [http://localhost:8080/q/metrics](http://localhost:8080/q/metrics).
+   This opens up the vast subject of observability and we have a good [example](https://github.com/apache/camel-quarkus-examples/tree/main/observability) for that.
+
 ## Troubleshooting in native mode
 
 In native mode, an executable targeting a specific operating system is built.
@@ -508,7 +512,6 @@ Also, for more involved scenarios with pods, more metrics... Then tools like [TN
  + [Quarkus Q-Tip: GraalVM Native DebugInfo](https://www.youtube.com/watch?v=JqV-NFWupLA)
 
 ## TODO
- + How to monitor CEQ ? What metrics to include ?
  + How to add args at JVM level ? debug=ssl ?
  + How to externalize property place holders ?
  + How to encrypt password in application.properties ?
