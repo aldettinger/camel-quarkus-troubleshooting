@@ -363,6 +363,8 @@ Thread dump follows:
 	at io.quarkus.runner.GeneratedMain.main(unknown source)
 ```
 
+Note that there is an upstream [ticket](https://github.com/oracle/graal/issues/5223) to separate the thread dump from stdout.
+
 There are more subjects like `-XX:+DumpHeapAndExit` or the fact that heap dump can't be created on Windows.
 More information are available [here](https://www.graalvm.org/22.2/reference-manual/native-image/guides/create-heap-dump/).
 
