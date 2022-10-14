@@ -162,7 +162,7 @@ org.aldettinger.troubleshooting.MyRoute.unusedMethodIncludedInTheGraph():void
 ```
 
 So, it's not used but embedded. Can you explain why ?
-Let's remember that the `MyRoute` class is [registered for reflection](https://github.com/apache/camel-quarkus/blob/main/extensions-core/core/deployment/src/main/java/org/apache/camel/quarkus/core/deployment/CamelNativeImageProcessor.java#L274) with methods. By default, Quarkus embed all methods.
+Let's remember that the `MyRoute` class is [registered for reflection](https://github.com/apache/camel-quarkus/blob/main/extensions-core/core/deployment/src/main/java/org/apache/camel/quarkus/core/deployment/CamelNativeImageProcessor.java#L279) with methods. By default, Quarkus embed all methods.
 
 Now, let's check whether `UnusedClass` is embedded or not with command below:
 
