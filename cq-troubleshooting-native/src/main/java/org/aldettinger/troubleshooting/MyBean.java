@@ -6,6 +6,7 @@ import javax.inject.Singleton;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Handler;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import io.quarkus.runtime.annotations.RegisterForReflection;
 import jdk.jfr.Description;
@@ -17,6 +18,9 @@ import sun.misc.Unsafe;
 @RegisterForReflection
 public class MyBean {
 
+    @ConfigProperty(name = "crash", defaultValue = "true")
+    boolean crash;
+
     @Handler
     public String doIt(Exchange exchange) {
         new DoItEvent().commit();
@@ -24,7 +28,7 @@ public class MyBean {
         long counter = exchange.getProperty(Exchange.TIMER_COUNTER, Long.class);
         String body = exchange.getMessage().getBody(String.class);
 
-        if (counter > 5) {
+        if (counter > 5 && crash) {
             crash();
         }
 

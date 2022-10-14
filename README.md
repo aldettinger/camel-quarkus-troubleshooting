@@ -307,6 +307,65 @@ org.aldettinger.troubleshooting.MyBean$DoItEvent {
 
 ```
 
+### Collecting Heap/Stack dumps
+
+Heap and stack dumps could provide great information about what's going on in a JVM.
+The good news is that it's possible to catch them with GraalVM CE version 22.2.0.
+
+The flag needed is the same as for collecting JFR events.
+The native image built at the beginning of this section included a parameter for that:
+
+```
+-Dquarkus.native.enable-vm-inspection=true
+```
+
+From there, we can have a terminal running the executable:
+
+```
+target/cq-troubleshooting-native-1.0.0-SNAPSHOT-runner -Dcrash=false
+```
+
+And another terminal triggering the heap dump:
+
+```
+kill -SIGUSR1 `pidof cq-troubleshooting-native-1.0.0-SNAPSHOT-runner`
+```
+
+The `hprof` file is generated in the current directory:
+
+```
+[main_upstream @ cq-troubleshooting-native]$ ls *.hprof
+svm-heapdump-5206-20221014T161127Z.hprof
+```
+
+And we can open it with a tool like eclipse mat or similar.
+
+We could as well generate a stack dump with:
+
+```
+kill -3 `pidof cq-troubleshooting-native-1.0.0-SNAPSHOT-runner`
+```
+
+And find the thread dump, but this time in the console output:
+
+```
+022-10-14T16:27:45.974873Z
+Thread dump follows:
+
+"Reference Handler" #40 daemon prio=10   java.lang.thread.State: WAITING
+	at com.oracle.svm.core.genscavenge.HeapImpl.transitionToNativeThenAwaitPendingRefs(HeapImpl.java:577)
+...
+	at com.oracle.svm.core.posix.thread.PosixPlatformThreads.pthreadStartRoutine(PosixPlatformThreads.java:202)
+
+"main" #1 prio=5   java.lang.thread.State: WAITING
+	at com.oracle.svm.core.posix.headers.Pthread.pthread_cond_wait(Pthread.java)
+...
+	at io.quarkus.runner.GeneratedMain.main(unknown source)
+```
+
+There are more subjects like `-XX:+DumpHeapAndExit` or the fact that heap dump can't be created on Windows.
+More information are available [here](https://www.graalvm.org/22.2/reference-manual/native-image/guides/create-heap-dump/).
+
 ### Debugging with gdb
 
 With a native executable, it's possible to use a debugger like [gdb](https://www.geeksforgeeks.org/gdb-command-in-linux-with-examples/).
