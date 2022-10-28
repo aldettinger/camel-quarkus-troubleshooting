@@ -23,7 +23,7 @@ There is no golden rule, still let's think where an issue is most likely to be c
  + A Camel Quarkus issue could also be reproduced on another Quarkus Platform participant (Quarkus/Camel Quarkus/Camel)
 
 Second, beyond that, we still have a few more tricks presented in this breakfix scenario in the `cq-troubleshooting-jvm` folder:
- + Tweaking camel-quarkus/quarkus versions alignment and changing boms order are not a good ideas
+ + Tweaking camel-quarkus/quarkus versions alignment and changing boms order are not good ideas
  + Missing camel-quarkus dependency (camel-quarkus-bean dependency is not set)
  + Taking the responsibility of creating a camel component instance could interfere with camel-quarkus extension logic
  + Configs are set after object initialization (@Config with static initializer)
@@ -46,7 +46,7 @@ http :8080/hello
  java -jar target/quarkus-app/quarkus-run.jar -Dquarkus.log.category.\"org.apache.camel.impl\".level=DEBUG
  java -Dquarkus.log.category.\"org.apache.camel.impl\".level=DEBUG -jar target/quarkus-app/quarkus-run.jar
  java -Dquarkus.log.category.\"org.apache.camel.quarkus.core\".level=DEBUG -jar target/quarkus-app/quarkus-run.jar
- # We can use -Djavax.net.debug=ssl to have SSL debugging as well (tested with rest-to-nats-demo in JVM and native mode)
+ # We can use -Djavax.net.debug=ssl to have SSL debugging as well (tested with rest-to-nats-demo in JVM and native mode
  ```
 
  + With the use of `micrometer` and `registry-prometheus` extensions, we are able to touch the monitoring subject.
@@ -98,13 +98,13 @@ Please notice the log line related to class initialization traces:
 The report contains the stack trace involved in the initialization of the `MyRoute` class.
 From this report, would you be able to find clues that the `MyRoute` class initialization:
  + has been recorded at build time ?
- + is instantiated through reflection ?
+ + has been performed through reflection ?
 
 This is just an example, the bottom line being that we can pass options to `native-image` using `-Dquarkus.native.additional-build-args`.
 
 ### Extracting information from a native executable
 
-In native an executable in generated.
+In native mode, an executable in generated.
 As such, standard tools working with executable could be used.
 For instance `readelf`, `strings` and so on.
 
@@ -214,7 +214,7 @@ Fatal error: unhandled exception in isolate 0x7f774a400000: java.lang.StackOverf
 
 This is just an example, the bottom line being that it's possible to pass some flags to the native executable.
 
-And actually, there is more a concrete case where passing flags to the native executable has helped.
+And actually, there is a more concrete case where passing flags to the native executable has helped.
 In camel-quarkus 2.10.0, I was suspecting a 10% mean throughput drop in native mode compared to camel-quarkus-2.9.0.
 I was able to pass some flags to the native executable to get more logs about garbage collection:
 
@@ -385,7 +385,7 @@ Then we can invoke `gdb` like below:
 gdb target/cq-troubleshooting-native-1.0.0-SNAPSHOT-runner
 ```
 
-And then, let it know ro tun the application by typing:
+And then, let's start the application by typing:
 
 ```
 run
@@ -515,7 +515,7 @@ However, other features seems not to be working like Breakpoint, Expression Eval
 
 Conclusion:
  + The support seems to be only partial (maybe the experience would be better with a gdb eclipse plugin)
- + There might be better support via other solutions (maybe [NativeJDB](https://quarkus.io/blog/nativejdb-debugger-for-native-images/) ?)
+ + There might be better support via other solutions ([NativeJDB](https://quarkus.io/blog/nativejdb-debugger-for-native-images/) is a promising track)
  + At the of the day, one does not native debug that often
 
 ## Performance regression detection
@@ -525,7 +525,7 @@ A performance regression tool was merged upstream in [camel-quarkus](https://git
  + It compares mean throughput against a list of camel-quarkus versions
  + It supports released versions, release candidate and SNAPSHOT versions
 
-During the camel-quarkus 2.10.0 staging release, the tool detects a -10% mean throughput performance drop in native mode compared to camel-quarkus 2.9.0. Note that the scenario tested at this experimental stage was different than now, still it's a good story to help with troubleshooting.
+During the camel-quarkus 2.10.0 staging release, the tool detects a -10% mean throughput performance drop in native mode compared to camel-quarkus 2.9.0. The issue does not happen in main scenario. Highly likely, few users could be impacted, still it's a good story to experiment performance troubleshooting.
 
 ![Quarkus Start](images/native-perf-regression-with-quarkus-2.10.0.CR1.png)
 
@@ -547,7 +547,7 @@ mvn clean install -Dquickly
 java -jar target/quarkus-app/quarkus-run.jar -an 2.9.0 2.10.0-SNAPSHOT
 ```
 
-Now, in image below, let's see what happen when running performance regression runs over periods of 1 second:
+Now another topic, in image below, let's see what happen when running performance regression runs over periods of 1 second:
 
 ![Native slower than JVM on first second](images/native-slower-than-JVM-on-first-second.png)
 
