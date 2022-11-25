@@ -576,3 +576,6 @@ Also, for more involved scenarios with pods, more metrics... Then tools like [TN
 ## TODO
  + How to externalize property place holders ?
  + How to encrypt password in application.properties ?
+ + What about JVM mode debugging ? Mention it ?
+ + What about Camel Textual Debugger ?
+ + What about remote debugging ? Does it make sense ?
