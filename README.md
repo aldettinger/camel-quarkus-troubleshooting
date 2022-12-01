@@ -459,7 +459,7 @@ info function .*crash.*
 Below, we put a breakpoint in the `crash()` method and step over the code line by line using `info`, `break` and `next` commands:
 
 ```
-break org.aldettinger.troubleshooting.MyBean.crash
+break org.aldettinger.troubleshooting.MyBean::crash
 ```
 
 Running the program again from the beginning would lead to the breakpoint being hit, and then could execute code step by step:
