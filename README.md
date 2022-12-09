@@ -497,7 +497,7 @@ com.oracle.svm.core.UnmanagedMemoryUtil.copyLongsBackward(org.graalvm.word.Point
 169	            long l24 = src.readLong(24);
 ```
 
-### Debugging from Eclipse
+### Debugging with GDB from Eclipse
 
 It seems we have all the DEBUG symbols needed to run `gdb`.
 So we might be able to run it from eclipse too, let's try to create a C/C++ debug configuration:
@@ -517,6 +517,22 @@ Conclusion:
  + The support seems to be only partial (maybe the experience would be better with a gdb eclipse plugin)
  + There might be better support via other solutions ([NativeJDB](https://quarkus.io/blog/nativejdb-debugger-for-native-images/) is a promising track)
  + At the of the day, one does not native debug that often
+
+### Debugging with NativeJDB from Eclipse
+
+I experimented with instructions below:
+
+```
+cd /home/agallice/dev/projects/native-jdb-upstream
+sdk use java 11.0.17-tem
+make compile
+make nativejdb CLASSNAME={nameofjarfile} NATIVEEXEC=apps/{nameofnativeexec} NATIVESRC=apps/{directorynameofdebugsources}
+rm -rf apps/*
+cp -rf ../camel-quarkus-troubleshooting/cq-troubleshooting-native/target/cq-troubleshooting-native-1.0.0-SNAPSHOT-native-image-source-jar/* apps/
+make nativejdb CLASSNAME=cq-troubleshooting-native-1.0.0-SNAPSHOT-runner ISQUARKUS=true
+```
+
+It looks barely usable at this stage. It's just a prototype.
 
 ## Performance regression detection
 
