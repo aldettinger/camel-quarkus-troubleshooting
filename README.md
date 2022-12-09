@@ -567,7 +567,7 @@ Also, for more involved scenarios with pods, more metrics... Then tools like [TN
 
 ## More links
  + [Native Reference Guide](https://quarkus.io/guides/native-reference)
- + [Camel Quarkus Performance Regression Prototype](https://github.com/aldettinger/cq-perf-sandbox)
+ + [Camel Quarkus Performance Regression Tool](https://github.com/apache/camel-quarkus/tree/main/tooling/perf-regression)
  + [GraalVM Options to Native Image Builder](https://www.graalvm.org/22.1/reference-manual/native-image/Options/#options-to-native-image-builder)
  + [Gdb command in Linux with examples](https://www.geeksforgeeks.org/gdb-command-in-linux-with-examples/)
  + [JDK Flight Recorder (JFR) with Native Image](https://www.graalvm.org/22.1/reference-manual/native-image/JFR/)
