@@ -46,7 +46,7 @@ http :8080/hello
  java -jar target/quarkus-app/quarkus-run.jar -Dquarkus.log.category.\"org.apache.camel.impl\".level=DEBUG
  java -Dquarkus.log.category.\"org.apache.camel.impl\".level=DEBUG -jar target/quarkus-app/quarkus-run.jar
  java -Dquarkus.log.category.\"org.apache.camel.quarkus.core\".level=DEBUG -jar target/quarkus-app/quarkus-run.jar
- # We can use -Djavax.net.debug=ssl to have SSL debugging as well (tested with rest-to-nats-demo in JVM and native mode
+ # We can use -Djavax.net.debug=ssl to have SSL debugging as well (tested with rest-to-nats-demo in JVM and native mode)
  ```
 
  + With the use of `micrometer` and `registry-prometheus` extensions, we are able to touch the monitoring subject.
