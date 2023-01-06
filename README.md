@@ -102,36 +102,6 @@ From this report, would you be able to find clues that the `MyRoute` class initi
 
 This is just an example, the bottom line being that we can pass options to `native-image` using `-Dquarkus.native.additional-build-args`.
 
-### Extracting information from a native executable
-
-In native mode, an executable in generated.
-As such, standard tools working with executable could be used.
-For instance `readelf`, `strings` and so on.
-
-Let's see an example below that help answering few questions:
- + What is the Java version run by the native executable ?
- + What is the GraalVM version ?
- + Is it Mandrel distribution ?
-
-Executing the command below:
-
-```
-strings target/cq-troubleshooting-native-1.0.0-SNAPSHOT-runner | grep core.VM
-```
-
-Would output some interesting bits:
-
-```
-com.oracle.svm.core.VM=GraalVM 22.0.0.2 Java 11 CE
-com.oracle.svm.core.VM.Java.Version=11.0.14
-com.oracle.svm.core.VM.Target.Platform=org.graalvm.nativeimage.Platform$LINUX_AMD64
-
-[27x_downstream @ nats]$ strings target/camel-quarkus-integration-test-nats-2.7.1.fuse-SNAPSHOT-runner | grep core.VM
-com.oracle.svm.core.VM=GraalVM 21.3.2.0-Final Java 11 Mandrel Distribution
-com.oracle.svm.core.VM.Java.Version=11.0.15
-com.oracle.svm.core.VM.Target.Platform=org.graalvm.nativeimage.Platform$LINUX_AMD64
-```
-
 ### Checking what Java code has been embedded inside the native executable
 
 In native mode, we are able to print some native reports, we have done this in the command line by passing:
@@ -172,6 +142,36 @@ grep Unused target/cq-troubleshooting-native-1.0.0-SNAPSHOT-native-image-source-
 ```
 
 We see there that `UnusedClass` has not been embedded.
+
+### Extracting information from a native executable
+
+In native mode, an executable in generated.
+As such, standard tools working with executable could be used.
+For instance `readelf`, `strings` and so on.
+
+Let's see an example below that help answering few questions:
+ + What is the Java version run by the native executable ?
+ + What is the GraalVM version ?
+ + Is it Mandrel distribution ?
+
+Executing the command below:
+
+```
+strings target/cq-troubleshooting-native-1.0.0-SNAPSHOT-runner | grep core.VM
+```
+
+Would output some interesting bits:
+
+```
+com.oracle.svm.core.VM=GraalVM 22.0.0.2 Java 11 CE
+com.oracle.svm.core.VM.Java.Version=11.0.14
+com.oracle.svm.core.VM.Target.Platform=org.graalvm.nativeimage.Platform$LINUX_AMD64
+
+[27x_downstream @ nats]$ strings target/camel-quarkus-integration-test-nats-2.7.1.fuse-SNAPSHOT-runner | grep core.VM
+com.oracle.svm.core.VM=GraalVM 21.3.2.0-Final Java 11 Mandrel Distribution
+com.oracle.svm.core.VM.Java.Version=11.0.15
+com.oracle.svm.core.VM.Target.Platform=org.graalvm.nativeimage.Platform$LINUX_AMD64
+```
 
 ### Passing flags to the native executable
 
@@ -369,7 +369,13 @@ Note that there is an upstream [ticket](https://github.com/oracle/graal/issues/5
 There are more subjects like `-XX:+DumpHeapAndExit` or the fact that heap dump can't be created on Windows.
 More information are available [here](https://www.graalvm.org/22.2/reference-manual/native-image/guides/create-heap-dump/).
 
-### Debugging with gdb
+### Debugging a native executable
+
+Sometimes, we face situation where we need to debug.
+The most important fact to remember is that in most situation we can debug in JVM mode as well.
+In the rare situations where the application behaves differently in native mode, then it's time to review debugging options.
+
+#### Debugging a native executable with GDB
 
 With a native executable, it's possible to use a debugger like [gdb](https://www.geeksforgeeks.org/gdb-command-in-linux-with-examples/).
 In the command line, we have included some debug information thanks to options below:
@@ -497,7 +503,9 @@ com.oracle.svm.core.UnmanagedMemoryUtil.copyLongsBackward(org.graalvm.word.Point
 169	            long l24 = src.readLong(24);
 ```
 
-### Debugging with GDB from Eclipse
+It's working. Still most Java developers would be used to graphical debuggers.
+
+#### Debugging a native executable with GDB from Eclipse
 
 It seems we have all the DEBUG symbols needed to run `gdb`.
 So we might be able to run it from eclipse too, let's try to create a C/C++ debug configuration:
@@ -510,16 +518,20 @@ So we might be able to run it from eclipse too, let's try to create a C/C++ debu
 ![Debugging a native image from eclipse](images/debugging-a-native-app-from-eclipse.png)
 
 We can use some standard debugger command, Step Over, Resume...
-Eclipse seems to be able to approximately match the control flow of the application.
-However, other features seems not to be working like Breakpoint, Expression Evaluation...
+Eclipse seems to approximately be able to match the control flow of the application.
+However, other features like Breakpoint, Expression Evaluation and so on seems not to be working.
 
-Conclusion:
- + The support seems to be only partial (maybe the experience would be better with a gdb eclipse plugin)
- + There might be better support via other solutions ([NativeJDB](https://quarkus.io/blog/nativejdb-debugger-for-native-images/) is a promising track)
- + At the of the day, one does not native debug that often
+To go further, we would need a kind of GDB debugger that can communicate over the Java Debug Wire Protocol.
 
-### Debugging with NativeJDB from Eclipse
+#### Debugging with NativeJDB
 
+This is the path explored by [NativeJDB](https://quarkus.io/blog/nativejdb-debugger-for-native-images/).
+
+The architecture is highlighted in the image below coming from [a Quarkus blog post](https://quarkus.io/blog/nativejdb-debugger-for-native-images/):
+
+![Debugging a native image from eclipse](images/nativejdbarch_1.png)
+
+The idea would be to use the NativeJDB Makefile in order to build a docker image that bundle the JDWP server and the native image under test.
 I experimented with instructions below:
 
 ```
@@ -532,7 +544,8 @@ cp -rf ../camel-quarkus-troubleshooting/cq-troubleshooting-native/target/cq-trou
 make nativejdb CLASSNAME=cq-troubleshooting-native-1.0.0-SNAPSHOT-runner ISQUARKUS=true
 ```
 
-It looks barely usable at this stage. It's just a prototype.
+This project has some potential but is still in early stage.
+Contributions would be welcome to improve usability, documentation and to overcome some limitations.
 
 ## Performance regression detection
 
@@ -595,3 +608,6 @@ Also, for more involved scenarios with pods, more metrics... Then tools like [TN
  + What about JVM mode debugging ? Mention it ?
  + What about Camel Textual Debugger ?
  + What about remote debugging ? Does it make sense ?
+ + Make it clear that most of this knowledge can be applied to most Quarkus project
+ + "Collecting JFR events" part => Could launch with crash=false
+ + "Collecting Heap/Stack dumps" => Find a better real case scenario to enhance the story telling
