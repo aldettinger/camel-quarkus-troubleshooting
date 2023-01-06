@@ -256,11 +256,10 @@ The native image built at the beginning of this section included a parameter for
 Now, at runtime, we could configure the native executable to record JFR events as below:
 
 ```
-target/cq-troubleshooting-native-1.0.0-SNAPSHOT-runner -XX:+FlightRecorder -XX:StartFlightRecording="filename=recording.jfr"
+target/cq-troubleshooting-native-1.0.0-SNAPSHOT-runner -XX:+FlightRecorder -XX:StartFlightRecording="filename=recording.jfr -Dcrash=false"
 ```
 
-Just remind to kill the native application before the SEGFAULT so that JFR events are flushed.
-And the command will produce the below output:
+An output similar to below will be produced:
 
 ```
 __  ____  __  _____   ___  __ ____  ______ 
@@ -285,7 +284,8 @@ __  ____  __  _____   ___  __ ____  ______
 2022-07-08 16:10:53,933 INFO  [io.quarkus] (Shutdown thread) cq-troubleshooting-native stopped in 0.004s
 ```
 
-Finally, we could print the interesting events:
+Finally, let's kill the native application and we see that a file named `recording.jfr` has been created.
+We could now print the interesting events as below:
 
 ```
 jfr print --events 'org.aldettinger.troubleshooting.MyBean$DoItEvent' recording.jfr
@@ -602,12 +602,13 @@ Also, for more involved scenarios with pods, more metrics... Then tools like [TN
  + [JDK Flight Recorder (JFR) with Native Image](https://www.graalvm.org/22.1/reference-manual/native-image/JFR/)
  + [Quarkus Q-Tip: GraalVM Native DebugInfo](https://www.youtube.com/watch?v=JqV-NFWupLA)
 
+# Conclusion
+
+ + Most of this knowledge can be applied to most Quarkus project (not only Camel)
+ + A key aspect is to understand where the issue is located (Camel, Quarkus or Camel Quarkus)
+ + Some efforts were done in order to improve troubleshooting in native mode
+ + Debug in native mode only when you need to
+
 ## TODO
- + How to externalize property place holders ?
- + How to encrypt password in application.properties ?
- + What about JVM mode debugging ? Mention it ?
- + What about Camel Textual Debugger ?
- + What about remote debugging ? Does it make sense ?
  + Make it clear that most of this knowledge can be applied to most Quarkus project
- + "Collecting JFR events" part => Could launch with crash=false
  + "Collecting Heap/Stack dumps" => Find a better real case scenario to enhance the story telling
