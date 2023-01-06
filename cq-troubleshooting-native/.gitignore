@@ -11,6 +11,12 @@ release.properties
 .settings/
 bin/
 
+# Eclipse mat
+*.index
+*.hprof
+*.threads
+*.zip
+
 # IntelliJ
 .idea
 *.ipr
