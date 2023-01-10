@@ -612,3 +612,4 @@ Also, for more involved scenarios with pods, more metrics... Then tools like [TN
 ## TODO
  + Make it clear that most of this knowledge can be applied to most Quarkus project
  + "Collecting Heap/Stack dumps" => Find a better real case scenario to enhance the story telling
+ + Check that H:±AllowVMInspection is not used (should not after native-image >= 20.3.0).
