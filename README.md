@@ -127,9 +127,8 @@ grep 'unusedMethodIncludedInTheGraph' target/cq-troubleshooting-native-1.0.0-SNA
 It output lines like below:
 
 ```
-com.oracle.svm.core.reflect.ReflectionAccessorHolder.MyRoute_unusedMethodIncludedInTheGraph_06308d43e14803a0a755a556fd063f42941c9235(boolean, Object, Object[]):Object
 org.aldettinger.troubleshooting.MyRoute.unusedMethodIncludedInTheGraph():void
-# unusedMethodIncludedInTheGraph is embedded
+org.aldettinger.troubleshooting.MyRoute_ClientProxy.unusedMethodIncludedInTheGraph():void
 ```
 
 So, it's not used but embedded. Can you explain why ?
@@ -190,7 +189,7 @@ It outputs some accessible flags below:
 ...
 ...
 ...
-  -XX:±UseReferenceHandlerThread               Populate reference queues in a separate thread rather than after a garbage collection. Default: + (enabled).
+  -XX:±UsePerfData                             Flag to disable jvmstat instrumentation for performance testing. Default: + (enabled).
   -XX:±VerboseGC                               Print more information about the heap before and after each collection. Default: - (disabled).
 ```
 
@@ -203,13 +202,14 @@ target/cq-troubleshooting-native-1.0.0-SNAPSHOT-runner -XX:StackSize=1
 Of course, we quickly reach a `StackOverflowError`:
 
 ```
-Fatal error: unhandled exception in isolate 0x7f774a400000: java.lang.StackOverflowError: null
-    at com.oracle.svm.core.graal.snippets.StackOverflowCheckImpl.newStackOverflowError0(StackOverflowCheckImpl.java:328)
-    at com.oracle.svm.core.graal.snippets.StackOverflowCheckImpl.newStackOverflowError(StackOverflowCheckImpl.java:324)
-    at com.oracle.svm.core.graal.snippets.StackOverflowCheckImpl.throwNewStackOverflowError(StackOverflowCheckImpl.java:304)
-    at java.io.PrintStream.println(PrintStream.java:881)
-    at com.oracle.svm.core.graal.snippets.CEntryPointSnippets.initializeIsolate(CEntryPointSnippets.java:321)
-    at com.oracle.svm.core.JavaMainWrapper$EnterCreateIsolateWithCArgumentsPrologue.enter(JavaMainWrapper.java:278)
+java.lang.StackOverflowError: null
+    at com.oracle.svm.core.graal.snippets.StackOverflowCheckImpl.newStackOverflowError0(StackOverflowCheckImpl.java:333)
+    at com.oracle.svm.core.graal.snippets.StackOverflowCheckImpl.newStackOverflowError(StackOverflowCheckImpl.java:329)
+    at com.oracle.svm.core.graal.snippets.StackOverflowCheckImpl.throwNewStackOverflowError(StackOverflowCheckImpl.java:309)
+    at java.io.PrintStream.writeln(PrintStream.java:718)
+    at java.io.PrintStream.println(PrintStream.java:1028)
+    at com.oracle.svm.core.graal.snippets.CEntryPointSnippets.initializeIsolate(CEntryPointSnippets.java:346)
+    at com.oracle.svm.core.JavaMainWrapper$EnterCreateIsolateWithCArgumentsPrologue.enter(JavaMainWrapper.java:383)
 ```
 
 This is just an example, the bottom line being that it's possible to pass some flags to the native executable.
@@ -256,7 +256,7 @@ The native image built at the beginning of this section included a parameter for
 Now, at runtime, we could configure the native executable to record JFR events as below:
 
 ```
-target/cq-troubleshooting-native-1.0.0-SNAPSHOT-runner -XX:+FlightRecorder -XX:StartFlightRecording="filename=recording.jfr -Dcrash=false"
+target/cq-troubleshooting-native-1.0.0-SNAPSHOT-runner -XX:+FlightRecorder -XX:StartFlightRecording="filename=recording.jfr" -Dcrash=false
 ```
 
 An output similar to below will be produced:
@@ -266,22 +266,23 @@ __  ____  __  _____   ___  __ ____  ______
  --/ __ \/ / / / _ | / _ \/ //_/ / / / __/ 
  -/ /_/ / /_/ / __ |/ , _/ ,< / /_/ /\ \   
 --\___\_\____/_/ |_/_/|_/_/|_|\____/___/   
-2022-07-08 16:10:51,637 INFO  [org.apa.cam.qua.cor.CamelBootstrapRecorder] (main) Bootstrap runtime: org.apache.camel.quarkus.main.CamelMainRuntime
-2022-07-08 16:10:51,640 INFO  [org.apa.cam.mai.MainSupport] (main) Apache Camel (Main) 3.17.0 is starting
-2022-07-08 16:10:51,645 INFO  [org.apa.cam.imp.eng.AbstractCamelContext] (main) Apache Camel 3.17.0 (camel-1) is starting
-2022-07-08 16:10:51,646 INFO  [org.apa.cam.imp.eng.AbstractCamelContext] (main) Routes startup (total:1 started:1)
-2022-07-08 16:10:51,646 INFO  [org.apa.cam.imp.eng.AbstractCamelContext] (main)     Started route1 (timer://test)
-2022-07-08 16:10:51,646 INFO  [org.apa.cam.imp.eng.AbstractCamelContext] (main) Apache Camel 3.17.0 (camel-1) started in 1ms (build:0ms init:0ms start:1ms)
-2022-07-08 16:10:51,646 INFO  [io.quarkus] (main) cq-troubleshooting-native 1.0.0-SNAPSHOT native (powered by Quarkus 2.10.1.Final) started in 0.019s. 
-2022-07-08 16:10:51,646 INFO  [io.quarkus] (main) Profile prod activated. 
-2022-07-08 16:10:51,646 INFO  [io.quarkus] (main) Installed features: [camel-bean, camel-core, camel-log, camel-timer, cdi]
-2022-07-08 16:10:52,647 INFO  [route1] (Camel (camel-1) thread #1 - timer://test) null :: MyBean counter 1
-2022-07-08 16:10:53,646 INFO  [route1] (Camel (camel-1) thread #1 - timer://test) null :: MyBean counter 2
-^C2022-07-08 16:10:53,929 INFO  [org.apa.cam.imp.eng.AbstractCamelContext] (Shutdown thread) Apache Camel 3.17.0 (camel-1) shutting down (timeout:45s)
-2022-07-08 16:10:53,932 INFO  [org.apa.cam.imp.eng.AbstractCamelContext] (Shutdown thread) Routes stopped (total:1 stopped:1)
-2022-07-08 16:10:53,932 INFO  [org.apa.cam.imp.eng.AbstractCamelContext] (Shutdown thread)     Stopped route1 (timer://test)
-2022-07-08 16:10:53,932 INFO  [org.apa.cam.imp.eng.AbstractCamelContext] (Shutdown thread) Apache Camel 3.17.0 (camel-1) shutdown in 3ms (uptime:2s287ms)
-2022-07-08 16:10:53,933 INFO  [io.quarkus] (Shutdown thread) cq-troubleshooting-native stopped in 0.004s
+2023-01-17 13:06:08,268 INFO  [org.apa.cam.qua.cor.CamelBootstrapRecorder] (main) Bootstrap runtime: org.apache.camel.quarkus.main.CamelMainRuntime
+2023-01-17 13:06:08,268 INFO  [org.apa.cam.mai.MainSupport] (main) Apache Camel (Main) 3.19.0 is starting
+2023-01-17 13:06:08,270 INFO  [org.apa.cam.imp.eng.AbstractCamelContext] (main) Apache Camel 3.19.0 (camel-1) is starting
+2023-01-17 13:06:08,271 INFO  [org.apa.cam.imp.eng.AbstractCamelContext] (main) Routes startup (started:1)
+2023-01-17 13:06:08,271 INFO  [org.apa.cam.imp.eng.AbstractCamelContext] (main)     Started route1 (timer://test)
+2023-01-17 13:06:08,271 INFO  [org.apa.cam.imp.eng.AbstractCamelContext] (main) Apache Camel 3.19.0 (camel-1) started in 0ms (build:0ms init:0ms start:0ms)
+2023-01-17 13:06:08,271 INFO  [io.quarkus] (main) cq-troubleshooting-native 1.0.0-SNAPSHOT native (powered by Quarkus 2.15.3.Final) started in 0.007s. 
+2023-01-17 13:06:08,271 INFO  [io.quarkus] (main) Profile prod activated. 
+2023-01-17 13:06:08,271 INFO  [io.quarkus] (main) Installed features: [camel-bean, camel-core, camel-log, camel-timer, cdi]
+2023-01-17 13:06:09,271 INFO  [route1] (Camel (camel-1) thread #1 - timer://test) null :: MyBean counter 1
+2023-01-17 13:06:10,272 INFO  [route1] (Camel (camel-1) thread #1 - timer://test) null :: MyBean counter 2
+2023-01-17 13:06:11,272 INFO  [route1] (Camel (camel-1) thread #1 - timer://test) null :: MyBean counter 3
+^C2023-01-17 13:06:11,392 INFO  [org.apa.cam.imp.eng.AbstractCamelContext] (Shutdown thread) Apache Camel 3.19.0 (camel-1) is shutting down (timeout:45s)
+2023-01-17 13:06:11,394 INFO  [org.apa.cam.imp.eng.AbstractCamelContext] (Shutdown thread) Routes stopped (stopped:1)
+2023-01-17 13:06:11,394 INFO  [org.apa.cam.imp.eng.AbstractCamelContext] (Shutdown thread)     Stopped route1 (timer://test)
+2023-01-17 13:06:11,394 INFO  [org.apa.cam.imp.eng.AbstractCamelContext] (Shutdown thread) Apache Camel 3.19.0 (camel-1) shutdown in 1ms (uptime:3s)
+2023-01-17 13:06:11,395 INFO  [io.quarkus] (Shutdown thread) cq-troubleshooting-native stopped in 0.003s
 ```
 
 Finally, let's kill the native application and we see that a file named `recording.jfr` has been created.
