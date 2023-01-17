@@ -610,4 +610,4 @@ Also, for more involved scenarios with pods, more metrics... Then tools like [TN
 
 ## TODO
  + "Collecting Heap/Stack dumps" => Find a better real case scenario to enhance the story telling
- + Check that H:±AllowVMInspection is not used (should not after native-image >= 20.3.0).
+ + Check that H:±AllowVMInspection is not used (should not after native-image >= 20.3.0) => https://github.com/quarkusio/quarkus/issues/30408
