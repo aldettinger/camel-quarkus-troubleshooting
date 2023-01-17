@@ -1,4 +1,4 @@
-# Camel Quarkus Troubleshootings tips
+# Camel Quarkus Troubleshooting Stories
 
 Camel Quarkus in few bullets:
  + Making the best of Camel play well with the best of Quarkus
@@ -305,7 +305,6 @@ org.aldettinger.troubleshooting.MyBean$DoItEvent {
   message = N/A
   eventThread = "Camel (camel-1) thread #1 - timer://test" (javaThreadId = 47)
 }
-
 ```
 
 ### Collecting Heap/Stack dumps
@@ -610,6 +609,5 @@ Also, for more involved scenarios with pods, more metrics... Then tools like [TN
  + Debug in native mode only when you need to
 
 ## TODO
- + Make it clear that most of this knowledge can be applied to most Quarkus project
  + "Collecting Heap/Stack dumps" => Find a better real case scenario to enhance the story telling
  + Check that H:±AllowVMInspection is not used (should not after native-image >= 20.3.0).
