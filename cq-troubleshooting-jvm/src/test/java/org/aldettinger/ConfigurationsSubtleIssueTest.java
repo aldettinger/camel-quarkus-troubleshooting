@@ -29,7 +29,7 @@ public class ConfigurationsSubtleIssueTest {
     @Test
     public void jpaComponentShouldBeConfiguredWithATransactionManager() {
         JpaComponent jpaComponent = context.getComponent("jpa", JpaComponent.class);
-        assertNotNull(jpaComponent.getTransactionStrategy());
+        assertNotNull(jpaComponent.getTransactionManager());
     }
 
 }
