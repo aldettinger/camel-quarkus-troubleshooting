@@ -33,21 +33,21 @@ Second, beyond that, we still have a few more tricks presented in this breakfix 
 mvn package
 java -jar target/quarkus-app/quarkus-run.jar
 # And in another window
-http :8080/hello
+curl http://localhost:8080/hello
 # We expect to see BasicMessageInProd and not BasicMessage
 ```
 
  + Tuning the logging level could be achieved via configuration items (find instructions in application.properties)
 
- ```
- watch http :8080/hello
- # In another window, try below command lines and explain
- java -jar target/quarkus-app/quarkus-run.jar
- java -jar target/quarkus-app/quarkus-run.jar -Dquarkus.log.category.\"org.apache.camel.impl\".level=DEBUG
- java -Dquarkus.log.category.\"org.apache.camel.impl\".level=DEBUG -jar target/quarkus-app/quarkus-run.jar
- java -Dquarkus.log.category.\"org.apache.camel.quarkus.core\".level=DEBUG -jar target/quarkus-app/quarkus-run.jar
- # We can use -Djavax.net.debug=ssl to have SSL debugging as well (tested with rest-to-nats-demo in JVM and native mode)
- ```
+```
+watch curl http://localhost:8080/hello
+# In another window, try below command lines and explain
+java -jar target/quarkus-app/quarkus-run.jar
+java -jar target/quarkus-app/quarkus-run.jar -Dquarkus.log.category.\"org.apache.camel.impl\".level=DEBUG
+java -Dquarkus.log.category.\"org.apache.camel.impl\".level=DEBUG -jar target/quarkus-app/quarkus-run.jar
+java -Dquarkus.log.category.\"org.apache.camel.quarkus.core\".level=DEBUG -jar target/quarkus-app/quarkus-run.jar
+# We can use -Djavax.net.debug=ssl to have SSL debugging as well (tested with rest-to-nats-demo in JVM and native mode)
+```
 
  + With the use of `micrometer` and `registry-prometheus` extensions, we are able to touch the monitoring subject.
    Let's review some out of the box metrics available at [http://localhost:8080/q/metrics](http://localhost:8080/q/metrics).
