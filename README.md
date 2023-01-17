@@ -73,11 +73,13 @@ mvn clean package -Dnative -Dquarkus.native.additional-build-args='--trace-class
 
 ### Pass an option to the native-image tool
 
-The native-image tool has a lot of [interesting options](https://www.graalvm.org/22.1/reference-manual/native-image/Options/#options-to-native-image-builder) that could be useful to investigate an issue.
+Scenario: Quarkus is hiding some of GraalVM complexities to users. Fine but I need to pass some extra parameters to the native-image command line.
 
-Those options could be passed to `native-image` through quarkus using `-Dquarkus.native.additional-build-args`.
+Indeed, the `native-image` tool has a lot of [interesting options](https://www.graalvm.org/22.1/reference-manual/native-image/Options/#options-to-native-image-builder) that could be useful to investigate an issue.
 
-For instance, we have traced the class initialization of the `MyRoute` class with the option:
+Those options could be passed to `native-image` through Quarkus using `-Dquarkus.native.additional-build-args`.
+
+For instance, we can trace the class initialization of the `MyRoute` class with the option:
 
 ```
 -Dquarkus.native.additional-build-args='--trace-class-initialization=org.aldettinger.troubleshooting.MyRoute'
@@ -103,6 +105,8 @@ From this report, would you be able to find clues that the `MyRoute` class initi
 This is just an example, the bottom line being that we can pass options to `native-image` using `-Dquarkus.native.additional-build-args`.
 
 ### Checking what Java code has been embedded inside the native executable
+
+Scenario: I have simplified my application not to use select classes/methods. How could I check that they are no more embedded in the native executable ?
 
 In native mode, we are able to print some native reports, we have done this in the command line by passing:
 
@@ -144,14 +148,13 @@ We see there that `UnusedClass` has not been embedded.
 
 ### Extracting information from a native executable
 
-In native mode, an executable in generated.
-As such, standard tools working with executable could be used.
-For instance `readelf`, `strings` and so on.
+Scenario: I have some native executables deployed out there. How could I check:
+ + the version of the JVM embedded in the native executable ?
+ + the GraalVM version used to build the native executable ?
+ + whether I'm using Mandrel or GraalVM ?
 
-Let's see an example below that help answering few questions:
- + What is the Java version run by the native executable ?
- + What is the GraalVM version ?
- + Is it Mandrel distribution ?
+Standard tools could be used to inspect the native executable.
+For instance `readelf`, `strings` and so on.
 
 Executing the command below:
 
@@ -173,6 +176,8 @@ com.oracle.svm.core.VM.Target.Platform=org.graalvm.nativeimage.Platform$LINUX_AM
 ```
 
 ### Passing flags to the native executable
+
+Scenario: I need to print garbage collection information. How could I do that in native mode ?
 
 It's possible to pass flags to the native executable, the whole list can be obtained using `-XX:PrintFlags=`:
 
@@ -245,6 +250,8 @@ So, the garbage collector is called more frequently, collection take longer time
 That could explain a performance drop.
 
 ### Collecting JFR events
+
+Scenario: I need to collect some custom monitoring events in order to diagnose my application. How could I do this in native mode ?
 
 JFR events could be collected since GraalVM CE 21.2.0.
 The native image built at the beginning of this section included a parameter for that:
