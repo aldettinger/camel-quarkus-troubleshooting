@@ -584,11 +584,11 @@ Of course, the duration of `1s` is not enough to build an accurate view about a 
 However, it's interesting to note that a short lived application is way faster in native mode compared to JVM mode.
 Could you explain [why](https://quarkus.io/guides/native-reference#why-is-runtime-performance-of-a-native-executable-inferior-compared-to-jvm-mode) ?
 
-Finally, let's remind a few things about the performance regression prototype:
+Finally, let's remind a few things about the performance regression tool:
  + Upstream only (actually the only upstream performance tool at this date)
  + Mean throughput based only
  + HTTP requests based scenario only
- + Native works only with environment where quarkus container-build is possible
+ + Performance regression detection in native mode needs a machine where [Quarkus container-build](https://quarkus.io/guides/building-native-image#container-runtime) is running
  + Maybe the scenario can be updated when troubleshooting a specific performance issue
 
 To further profile runtime behaviour with flame graph, Quarkus describes a [tip](https://quarkus.io/guides/native-reference#profiling). I have not tested though.
