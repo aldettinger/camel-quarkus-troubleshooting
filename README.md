@@ -330,7 +330,7 @@ The native image built at the beginning of this section included a parameter for
 From there, we can have a terminal running the executable:
 
 ```
-target/cq-troubleshooting-native-1.0.0-SNAPSHOT-runner -Dcrash=false
+target/cq-troubleshooting-native-1.0.0-SNAPSHOT-runner -Dmem-leak=true -Dcrash=false
 ```
 
 And another terminal triggering the heap dump:

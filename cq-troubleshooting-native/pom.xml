@@ -43,11 +43,11 @@
         </dependency>
         <dependency>
             <groupId>org.apache.camel.quarkus</groupId>
-            <artifactId>camel-quarkus-timer</artifactId>
+            <artifactId>camel-quarkus-log</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.camel.quarkus</groupId>
-            <artifactId>camel-quarkus-log</artifactId>
+            <artifactId>camel-quarkus-timer</artifactId>
         </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>

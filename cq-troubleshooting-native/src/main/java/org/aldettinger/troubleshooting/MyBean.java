@@ -1,12 +1,19 @@
 package org.aldettinger.troubleshooting;
 
 import java.lang.reflect.Field;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
+import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Handler;
+import org.apache.camel.ProducerTemplate;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.jboss.logging.Logger;
 
 import io.quarkus.runtime.annotations.RegisterForReflection;
 import jdk.jfr.Description;
@@ -18,8 +25,17 @@ import sun.misc.Unsafe;
 @RegisterForReflection
 public class MyBean {
 
+    private static final Logger LOG = Logger.getLogger(MyBean.class);
+
     @ConfigProperty(name = "crash", defaultValue = "true")
     boolean crash;
+
+    @ConfigProperty(name = "mem-leak", defaultValue = "false")
+    boolean memoryLeak;
+    private static List<Date> memoryLeakedObjects = new ArrayList<Date>();
+
+    @Inject
+    ProducerTemplate producerTemplate;
 
     @Handler
     public String doIt(Exchange exchange) {
@@ -30,6 +46,11 @@ public class MyBean {
 
         if (counter > 5 && crash) {
             crash();
+        } else if(counter == 1 && memoryLeak) {
+            LOG.info("Triggering date memory leaks");
+            for(int i = 0; i< 1000000; i++) {
+                memoryLeakedObjects.add(Date.from(Instant.now()));
+            }
         }
 
         return body + " :: MyBean counter " + counter;
