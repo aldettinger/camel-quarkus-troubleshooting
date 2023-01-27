@@ -59,7 +59,7 @@ In native mode, an executable targeting a specific operating system is built.
 There is a first process assembling a command line to invoke the GraalVM `native image` tool.
 Then, a second process is actually running the built command line in order to create the executable.
 
-Let's open a shell in the `cq-troubleshooting-native`:
+Let's switch to the `cq-troubleshooting-native` folder:
 
 ```
 cd ~/dev/projects/camel-quarkus-troubleshooting/cq-troubleshooting-native
@@ -615,6 +615,14 @@ Also, for more involved scenarios with pods, more metrics... Then tools like [TN
  + A key aspect is to understand where the issue is located (Camel, Quarkus or Camel Quarkus)
  + Some efforts were done in order to improve troubleshooting in native mode
  + Debug in native mode only when you need to
+
+# Preparation
+
+ + Terminator, split horizontally, in each tab do:
+ + CTRL + rool mouse 9x
+ + cd ~/dev/projects/camel-quarkus-troubleshooting/cq-troubleshooting-jvm
+ + In cq-troubleshooting-jvm, open pom.xml, MyRoute.java, MyBean.java, Configurations.java, application.properties
+ + In cq-troubleshooting-native, MyRoute.java, MyBean.java
 
 ## TODO
  + "Collecting Heap/Stack dumps" => Find a better real case scenario to enhance the story telling
