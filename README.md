@@ -317,6 +317,8 @@ org.aldettinger.troubleshooting.MyBean$DoItEvent {
 
 ### Collecting Heap/Stack dumps
 
+Scenario: Is there a memory leak ? Is there a thread hanging ?
+
 Heap and stack dumps could provide great information about what's going on in a JVM.
 The good news is that it's possible to catch them with GraalVM CE version 22.2.0.
 
