@@ -625,6 +625,7 @@ Also, for more involved scenarios with pods, more metrics... Then tools like [TN
  + cd ~/dev/projects/camel-quarkus-troubleshooting/cq-troubleshooting-jvm
  + In cq-troubleshooting-jvm, open pom.xml, MyRoute.java, MyBean.java, Configurations.java, application.properties
  + In cq-troubleshooting-native, MyRoute.java, MyBean.java
+ + In eclipse CTRL/SHIFT/+ 3 times to enlarge policy size
 
 ## TODO
  + Check that H:±AllowVMInspection is not used (should not after native-image >= 20.3.0) => https://github.com/quarkusio/quarkus/issues/30408
