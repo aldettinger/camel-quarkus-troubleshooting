@@ -620,6 +620,13 @@ Also, for more involved scenarios with pods, more metrics... Then tools like [TN
 
 # Preparation
 
+ + cd ~/dev/projects/camel-quarkus-troubleshooting/
+ + git checkout -- .
+ + rm cq-troubleshooting-native/*.index
+ + rm cq-troubleshooting-native/*.hprof
+ + rm cq-troubleshooting-native/*.zip
+ + rm cq-troubleshooting-native/*.threads
+ + rm cq-troubleshooting-native/recording.jfr
  + Terminator, split horizontally, in each tab do:
  + CTRL + rool mouse 9x
  + cd ~/dev/projects/camel-quarkus-troubleshooting/cq-troubleshooting-jvm
